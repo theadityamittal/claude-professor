@@ -17,15 +17,9 @@ You will receive a task description as your prompt. Use it to drive all analysis
 
 ## Step 1: Load reference data
 
-Read the concept registry and domain list:
-
-```bash
-# Read concepts registry
-cat ${CLAUDE_PLUGIN_ROOT}/data/concepts_registry.json
-
-# Read domain list
-cat ${CLAUDE_PLUGIN_ROOT}/data/domains.json
-```
+Read both files using the Read tool:
+- `${CLAUDE_PLUGIN_ROOT}/data/concepts_registry.json`
+- `${CLAUDE_PLUGIN_ROOT}/data/domains.json`
 
 Internalize both files. The domain list is the **only** source of valid domains. You MUST NOT invent domains outside this list. If no existing domain fits a concept, use `custom`.
 
@@ -38,7 +32,7 @@ Before running any scripts, reason through the task carefully. Ask yourself:
 - What foundational concepts does someone need to understand the task deeply?
 - What cross-cutting concerns apply? (e.g., security, concurrency, error handling patterns)
 
-Generate a candidate list of up to 25 concept IDs to investigate. Order them by how central they are to the task.
+Focus on concepts the developer needs for this task, including prerequisites and adjacent concerns — not general knowledge unrelated to the task. Generate a candidate list of up to 25 concept IDs to investigate. Order them by how central they are to the task.
 
 ## Step 3: Search the registry
 
@@ -65,18 +59,18 @@ node ${CLAUDE_PLUGIN_ROOT}/scripts/lookup.js status \
   --registry-path ${CLAUDE_PLUGIN_ROOT}/data/concepts_registry.json
 ```
 
-If the script fails, record the error message and proceed with status unknown for all concepts.
+If the script fails, record the error message. Treat all affected concepts as `teach_new` (conservative — better to teach than to skip).
 
 ## Step 5: Classify concepts
 
-Using the mastery status output, classify each concept into exactly one bucket:
+The lookup script returns a `status` field for each concept (`new`, `teach_new`, `review`, or `skip`). Use it directly — do not re-apply your own thresholds.
 
 | Bucket | Criteria |
 |--------|----------|
-| `teach_new` | Concept is in registry AND status is `new` (never reviewed) |
-| `review` | Concept is in registry AND status is `review` (retrievability < 0.75) |
-| `skip` | Concept is in registry AND status is `skip` (retrievability >= 0.75, well retained) |
-| `not_in_registry` | Concept is NOT in the registry (genuinely novel — suggest it) |
+| `teach_new` | Registry concept with status `new` or `teach_new` from lookup |
+| `review` | Registry concept with status `review` from lookup |
+| `skip` | Registry concept with status `skip` from lookup |
+| `not_in_registry` | Concept you identified that is NOT in the registry |
 
 For `not_in_registry` concepts, follow the naming convention strictly:
 - ID: lowercase_snake_case, maximum 3 words (e.g., `vector_clock`, `raft_consensus`)
@@ -95,7 +89,7 @@ Only suggest new concepts for genuinely novel topics not covered by the existing
 
 ## Step 7: Return the briefing
 
-Output ONLY valid JSON in this exact format — no prose, no markdown fences, no explanation:
+Output ONLY valid JSON in this exact format — no prose, no markdown fences, no explanation. (The fences below are for prompt readability only — your output must be raw JSON.)
 
 ```json
 {

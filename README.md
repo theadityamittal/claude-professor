@@ -82,7 +82,7 @@ The handoff document is written to your project's `docs/professor/` directory wi
 - **Key Decisions Made** — Architectural choices discussed and agreed upon
 
 Feed this document into your preferred next step:
-- **Superpowers brainstorming:** Reference the handoff as context for `/brainstorm`
+- **Superpowers brainstorming:** Reference the handoff as context for `/brainstorming`
 - **Claude Code plan mode:** Point Claude at the handoff file
 - **Manual implementation:** Read it yourself as a spec
 

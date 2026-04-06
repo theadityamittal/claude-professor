@@ -1,0 +1,19 @@
+[
+  {"id": "algorithms", "parent": null},
+  {"id": "data_structures", "parent": null},
+  {"id": "databases", "parent": null},
+  {"id": "networking", "parent": null},
+  {"id": "security", "parent": null},
+  {"id": "cloud_infrastructure", "parent": null},
+  {"id": "devops", "parent": null},
+  {"id": "frontend", "parent": null},
+  {"id": "backend", "parent": null},
+  {"id": "ml_ai", "parent": null},
+  {"id": "systems", "parent": null},
+  {"id": "architecture", "parent": null},
+  {"id": "testing", "parent": null},
+  {"id": "concurrency", "parent": null},
+  {"id": "languages", "parent": null},
+  {"id": "tools", "parent": null},
+  {"id": "custom", "parent": null}
+]

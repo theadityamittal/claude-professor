@@ -6,7 +6,7 @@
   "plugins": [
     {
       "name": "claude-professor",
-      "source": ".",
+      "source": "./",
       "description": "Learning layer for AI-assisted development. Teaches concepts before you build, tracks knowledge with spaced repetition, and produces enriched handoff documents."
     }
   ]

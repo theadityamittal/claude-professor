@@ -123,7 +123,7 @@ node ${CLAUDE_PLUGIN_ROOT}/scripts/update.js \
   --grade {1|2|3|4} \
   --is-registry-concept {true|false} \
   --difficulty-tier "{foundational|intermediate|advanced}" \
-  --profile-dir ~/.claude/professor/profile/ \
+  --profile-dir ~/.claude/professor/concepts/ \
   --notes "{one-line context}"
 ```
 

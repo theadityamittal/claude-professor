@@ -54,7 +54,7 @@ Once you have your merged concept list, get the developer's mastery status for a
 ```bash
 node ${CLAUDE_PLUGIN_ROOT}/scripts/lookup.js status \
   --concepts "{comma-separated concept IDs}" \
-  --profile-dir ~/.claude/professor/profile/ \
+  --profile-dir ~/.claude/professor/concepts/ \
   --domains-path ${CLAUDE_PLUGIN_ROOT}/data/domains.json \
   --registry-path ${CLAUDE_PLUGIN_ROOT}/data/concepts_registry.json
 ```

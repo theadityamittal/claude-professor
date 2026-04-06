@@ -17,7 +17,6 @@ Codebase architecture scanning and component graph generation. Dispatches parall
 
 ## Key Files
 - skills/analyze-architecture/SKILL.md
-- commands/analyze-architecture.md
 - scripts/graph.js
 - scripts/detect-changes.js
 - scripts/test/graph.test.js

@@ -7,7 +7,7 @@ claude-professor
 feat/phase-2-architecture-design
 
 ## Last Updated
-2026-04-06T22:21:03.081Z
+2026-04-06T22:52:19.598Z
 
 ## Summary
 Claude Code plugin implementing an adaptive teaching layer for AI-assisted development. Uses FSRS-5 spaced repetition to track concept mastery, scans codebase architecture, and conducts system design conversations with integrated teaching.

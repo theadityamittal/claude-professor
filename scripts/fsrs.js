@@ -24,6 +24,7 @@ function clamp(value, min, max) {
 
 function computeRetrievability(stability, elapsedDays) {
   if (elapsedDays <= 0) return 1.0;
+  if (!stability || stability <= 0) return 0.0;
   return Math.pow(1 + FACTOR * elapsedDays / stability, DECAY);
 }
 

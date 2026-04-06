@@ -30,6 +30,16 @@ describe('computeRetrievability', () => {
     assert.ok(Math.abs(r - 1.0) < 0.001, `Expected ~1.0, got ${r}`);
   });
 
+  it('returns 0.0 for zero stability', () => {
+    const r = computeRetrievability(0, 5);
+    assert.equal(r, 0.0);
+  });
+
+  it('returns 0.0 for negative stability', () => {
+    const r = computeRetrievability(-1, 5);
+    assert.equal(r, 0.0);
+  });
+
   it('returns value between 0 and 1 for positive elapsed days', () => {
     const r = computeRetrievability(5, 20);
     assert.ok(r > 0 && r < 1, `Expected 0 < r < 1, got ${r}`);

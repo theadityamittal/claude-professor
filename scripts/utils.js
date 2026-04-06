@@ -15,7 +15,9 @@ function readJSON(filePath) {
 
 function writeJSON(filePath, data) {
   ensureDir(path.dirname(filePath));
-  fs.writeFileSync(filePath, JSON.stringify(data, null, 2) + '\n', 'utf-8');
+  const tmpPath = filePath + '.tmp';
+  fs.writeFileSync(tmpPath, JSON.stringify(data, null, 2) + '\n', 'utf-8');
+  fs.renameSync(tmpPath, filePath);
 }
 
 function ensureDir(dirPath) {

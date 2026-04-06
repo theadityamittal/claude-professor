@@ -91,9 +91,23 @@ if (require.main === module) {
 
   try {
     if (mode === 'search') {
+      const searchRequired = ['registry-path', 'domains-path', 'query'];
+      const missing = searchRequired.filter(k => !args[k]);
+      if (missing.length > 0) {
+        process.stderr.write(`Missing required arguments: ${missing.join(', ')}\n`);
+        process.stderr.write('Usage: node lookup.js search --query QUERY --registry-path PATH --domains-path PATH\n');
+        process.exit(1);
+      }
       const result = search(args['registry-path'], args['domains-path'], args.query);
       process.stdout.write(JSON.stringify(result, null, 2) + '\n');
     } else if (mode === 'status') {
+      const statusRequired = ['concepts', 'profile-dir', 'domains-path', 'registry-path'];
+      const missing = statusRequired.filter(k => !args[k]);
+      if (missing.length > 0) {
+        process.stderr.write(`Missing required arguments: ${missing.join(', ')}\n`);
+        process.stderr.write('Usage: node lookup.js status --concepts IDS --profile-dir PATH --domains-path PATH --registry-path PATH\n');
+        process.exit(1);
+      }
       const conceptIds = args.concepts.split(',').map(s => s.trim());
       const result = status(conceptIds, args['profile-dir'], args['domains-path'], args['registry-path']);
       process.stdout.write(JSON.stringify(result, null, 2) + '\n');

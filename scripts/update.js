@@ -11,10 +11,14 @@ function update(options) {
   const { concept, domain, grade, isRegistryConcept, difficultyTier,
           profileDir, documentationUrl, notes } = options;
 
+  const gradeNum = parseInt(grade, 10);
+  if (![1, 2, 3, 4].includes(gradeNum)) {
+    throw new Error(`Invalid grade: ${grade}. Must be 1 (Again), 2 (Hard), 3 (Good), or 4 (Easy).`);
+  }
+
   ensureDir(profileDir);
   const filePath = path.join(profileDir, `${domain}.json`);
   const profile = readJSON(filePath) || [];
-  const gradeNum = parseInt(grade, 10);
   const now = isoNow();
 
   const existingIdx = profile.findIndex(c => c.concept_id === concept);
@@ -57,23 +61,25 @@ function update(options) {
   );
   const newDifficulty = computeNewDifficulty(entry.fsrs_difficulty, gradeNum);
 
-  entry.last_reviewed = now;
-  entry.review_history.push({ date: now, grade: gradeNum });
-  entry.fsrs_stability = Math.round(newStability * 10000) / 10000;
-  entry.fsrs_difficulty = Math.round(newDifficulty * 1000) / 1000;
+  const updatedEntry = {
+    ...entry,
+    last_reviewed: now,
+    review_history: [...entry.review_history, { date: now, grade: gradeNum }],
+    fsrs_stability: Math.round(newStability * 10000) / 10000,
+    fsrs_difficulty: Math.round(newDifficulty * 1000) / 1000,
+    documentation_url: documentationUrl || entry.documentation_url,
+    notes: notes || entry.notes,
+  };
 
-  if (documentationUrl) entry.documentation_url = documentationUrl;
-  if (notes) entry.notes = notes;
-
-  profile[existingIdx] = entry;
-  writeJSON(filePath, profile);
+  const updatedProfile = profile.map((c, i) => i === existingIdx ? updatedEntry : c);
+  writeJSON(filePath, updatedProfile);
 
   return {
     success: true,
     concept_id: concept,
     domain,
-    new_stability: entry.fsrs_stability,
-    new_difficulty: entry.fsrs_difficulty,
+    new_stability: updatedEntry.fsrs_stability,
+    new_difficulty: updatedEntry.fsrs_difficulty,
     action: 'updated',
   };
 }

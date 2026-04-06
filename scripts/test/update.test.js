@@ -130,4 +130,43 @@ describe('update.js', () => {
       });
     }, (err) => err.status === 1);
   });
+
+  it('rejects invalid grade values', () => {
+    for (const bad of ['0', '5', 'abc', '-1']) {
+      assert.throws(() => {
+        execFileSync('node', [
+          scriptPath, '--concept', 'test_invalid', '--domain', 'testing',
+          '--grade', bad, '--profile-dir', profileDir,
+        ], { encoding: 'utf-8', timeout: 5000 });
+      }, (err) => err.status === 1, `Expected exit 1 for grade=${bad}`);
+    }
+  });
+
+  it('does not corrupt sibling concepts when updating one', () => {
+    runUpdate([
+      '--concept', 'concept_a', '--domain', 'testing',
+      '--grade', '3', '--is-registry-concept', 'true',
+      '--difficulty-tier', 'foundational', '--profile-dir', profileDir,
+    ]);
+    runUpdate([
+      '--concept', 'concept_b', '--domain', 'testing',
+      '--grade', '4', '--is-registry-concept', 'true',
+      '--difficulty-tier', 'intermediate', '--profile-dir', profileDir,
+    ]);
+
+    // Update only concept_b
+    runUpdate([
+      '--concept', 'concept_b', '--domain', 'testing',
+      '--grade', '1', '--is-registry-concept', 'true',
+      '--difficulty-tier', 'intermediate', '--profile-dir', profileDir,
+    ]);
+
+    const profile = JSON.parse(fs.readFileSync(
+      path.join(profileDir, 'testing.json'), 'utf-8'
+    ));
+    const a = profile.find(c => c.concept_id === 'concept_a');
+    const b = profile.find(c => c.concept_id === 'concept_b');
+    assert.equal(a.review_history.length, 1, 'concept_a should be untouched');
+    assert.equal(b.review_history.length, 2, 'concept_b should have 2 reviews');
+  });
 });

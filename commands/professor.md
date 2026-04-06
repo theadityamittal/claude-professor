@@ -32,9 +32,9 @@ Wait for a structured briefing JSON.
 
 Parse into four groups: `teach_new`, `review`, `skip`, `not_in_registry`.
 
-If total exceeds 20, keep the most important 20. Priority: `teach_new` > `review` > `not_in_registry` > `skip`. Track overflow for the handoff document.
+If total exceeds 12, keep the 12 most central to the task. Priority: `teach_new` > `review` > `not_in_registry` > `skip`. Track overflow for the handoff document.
 
-Within `teach_new`, reorder so foundational concepts come before intermediate/advanced ones that depend on them.
+Preserve the agent's priority order (most central to the task first). Do NOT re-sort by difficulty — a developer asking about Redis caching should learn about caching patterns before generic foundational concepts.
 
 ---
 
@@ -202,3 +202,4 @@ If the developer says any of these during the session, respect it:
 - **Be concise.** Analogies: 2–3 sentences. Feedback: 1–3 sentences.
 - **Grade honestly.** Partial credit (`Hard`) exists. Don't inflate.
 - **Maintain flow.** Don't ask "ready to continue?" between concepts.
+- **No unexplained jargon.** Never use a technical term in an explanation unless it was either (a) taught earlier in this session, (b) confirmed known via `skip` status, or (c) defined inline in one sentence when first used. The developer should never encounter a term they haven't been introduced to.

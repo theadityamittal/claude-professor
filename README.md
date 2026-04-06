@@ -33,22 +33,22 @@ When you invoke `/professor` with a task description, the plugin:
 
 ```bash
 # Add the marketplace (one-time)
-claude plugin marketplace add YOUR_USERNAME/claude-professor
+/plugin marketplace add https://github.com/theadityamittal/claude-professor.git
 
 # Install the plugin
-claude plugin install claude-professor@claude-professor
+/plugin install claude-professor@claude-professor
 ```
 
 ### From Local Clone
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/claude-professor.git
+git clone https://github.com/theadityamittal/claude-professor.git
 
 # Add as a local marketplace
 claude plugin marketplace add ./claude-professor
 
 # Install
-claude plugin install claude-professor@claude-professor
+/plugin install claude-professor@claude-professor
 ```
 
 ### Requirements

@@ -1,7 +1,8 @@
 'use strict';
 
 const path = require('node:path');
-const { readJSON, writeJSON, ensureDir, isoNow, daysBetween, parseArgs } = require('./utils.js');
+const { ensureDir, isoNow, daysBetween, parseArgs,
+        readMarkdownWithFrontmatter, writeMarkdownFile } = require('./utils.js');
 const {
   computeNewStability, computeNewDifficulty, computeRetrievability,
   getInitialStability, getInitialDifficulty,
@@ -17,17 +18,15 @@ function update(options) {
   }
 
   ensureDir(profileDir);
-  const filePath = path.join(profileDir, `${domain}.json`);
-  const profile = readJSON(filePath) || [];
+  const conceptPath = path.join(profileDir, domain, `${concept}.md`);
+  const existing = readMarkdownWithFrontmatter(conceptPath);
   const now = isoNow();
 
-  const existingIdx = profile.findIndex(c => c.concept_id === concept);
-
-  if (existingIdx === -1) {
+  if (!existing) {
     const newStability = getInitialStability(gradeNum);
     const newDifficulty = getInitialDifficulty(gradeNum);
 
-    profile.push({
+    const frontmatter = {
       concept_id: concept,
       domain,
       is_registry_concept: isRegistryConcept === 'true',
@@ -38,9 +37,10 @@ function update(options) {
       fsrs_stability: newStability,
       fsrs_difficulty: Math.round(newDifficulty * 1000) / 1000,
       documentation_url: documentationUrl || null,
-      notes: notes || null,
-    });
-    writeJSON(filePath, profile);
+    };
+    const title = concept.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+    const body = `\n# ${title}\n\n## Notes\n${notes || 'No notes yet.'}\n`;
+    writeMarkdownFile(conceptPath, frontmatter, body);
 
     return {
       success: true,
@@ -52,7 +52,7 @@ function update(options) {
     };
   }
 
-  const entry = profile[existingIdx];
+  const entry = existing.frontmatter;
   const elapsed = daysBetween(entry.last_reviewed, now);
   const retrievability = computeRetrievability(entry.fsrs_stability, Math.max(elapsed, 0.001));
 
@@ -61,25 +61,23 @@ function update(options) {
   );
   const newDifficulty = computeNewDifficulty(entry.fsrs_difficulty, gradeNum);
 
-  const updatedEntry = {
+  const updatedFrontmatter = {
     ...entry,
     last_reviewed: now,
     review_history: [...entry.review_history, { date: now, grade: gradeNum }],
     fsrs_stability: Math.round(newStability * 10000) / 10000,
     fsrs_difficulty: Math.round(newDifficulty * 1000) / 1000,
     documentation_url: documentationUrl || entry.documentation_url,
-    notes: notes || entry.notes,
   };
 
-  const updatedProfile = profile.map((c, i) => i === existingIdx ? updatedEntry : c);
-  writeJSON(filePath, updatedProfile);
+  writeMarkdownFile(conceptPath, updatedFrontmatter, existing.body);
 
   return {
     success: true,
     concept_id: concept,
     domain,
-    new_stability: updatedEntry.fsrs_stability,
-    new_difficulty: updatedEntry.fsrs_difficulty,
+    new_stability: updatedFrontmatter.fsrs_stability,
+    new_difficulty: updatedFrontmatter.fsrs_difficulty,
     action: 'updated',
   };
 }

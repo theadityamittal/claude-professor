@@ -2,6 +2,7 @@
 
 const fs = require('node:fs');
 const path = require('node:path');
+const os = require('node:os');
 
 function readJSON(filePath) {
   try {
@@ -50,4 +51,53 @@ function parseArgs(argv) {
   return args;
 }
 
-module.exports = { readJSON, writeJSON, ensureDir, isoNow, daysBetween, parseArgs };
+function readMarkdownWithFrontmatter(filePath) {
+  let raw;
+  try {
+    raw = fs.readFileSync(filePath, 'utf-8');
+  } catch (err) {
+    if (err.code === 'ENOENT') return null;
+    throw err;
+  }
+
+  const fmStart = raw.indexOf('---json\n');
+  if (fmStart === -1) throw new Error(`No ---json frontmatter in ${filePath}`);
+  const fmContentStart = fmStart + '---json\n'.length;
+  const fmEnd = raw.indexOf('\n---', fmContentStart);
+  if (fmEnd === -1) throw new Error(`Unclosed frontmatter in ${filePath}`);
+
+  const jsonStr = raw.slice(fmContentStart, fmEnd);
+  const frontmatter = JSON.parse(jsonStr);
+  const body = raw.slice(fmEnd + '\n---'.length).replace(/^\n/, '');
+
+  return { frontmatter, body };
+}
+
+function writeMarkdownFile(filePath, frontmatter, body) {
+  ensureDir(path.dirname(filePath));
+  const content = '---json\n' + JSON.stringify(frontmatter, null, 2) + '\n---\n' + (body || '');
+  const tmpPath = filePath + '.tmp';
+  fs.writeFileSync(tmpPath, content, 'utf-8');
+  fs.renameSync(tmpPath, filePath);
+}
+
+function listMarkdownFiles(dirPath) {
+  try {
+    return fs.readdirSync(dirPath).filter(f => f.endsWith('.md'));
+  } catch (err) {
+    if (err.code === 'ENOENT') return [];
+    throw err;
+  }
+}
+
+function expandHome(filepath) {
+  if (filepath.startsWith('~/') || filepath === '~') {
+    return path.join(os.homedir(), filepath.slice(1));
+  }
+  return filepath;
+}
+
+module.exports = {
+  readJSON, writeJSON, ensureDir, isoNow, daysBetween, parseArgs,
+  readMarkdownWithFrontmatter, writeMarkdownFile, listMarkdownFiles, expandHome,
+};

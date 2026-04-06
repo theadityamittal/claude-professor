@@ -29,9 +29,6 @@ cat ${CLAUDE_PLUGIN_ROOT}/data/domains.json
 
 Internalize both files. The domain list is the **only** source of valid domains. You MUST NOT invent domains outside this list. If no existing domain fits a concept, use `custom`.
 
-Valid domains (from domains.json):
-`algorithms`, `data_structures`, `databases`, `networking`, `security`, `cloud_infrastructure`, `devops`, `frontend`, `backend`, `ml_ai`, `systems`, `architecture`, `testing`, `concurrency`, `languages`, `tools`, `custom`
-
 ## Step 2: Think like a solutions architect
 
 Before running any scripts, reason through the task carefully. Ask yourself:
@@ -83,7 +80,7 @@ Using the mastery status output, classify each concept into exactly one bucket:
 
 For `not_in_registry` concepts, follow the naming convention strictly:
 - ID: lowercase_snake_case, maximum 3 words (e.g., `vector_clock`, `raft_consensus`)
-- Domain: must come from the valid domain list above — use `custom` if nothing fits
+- Domain: must come from domains.json — use `custom` if nothing fits
 - Difficulty: one of `foundational`, `intermediate`, `advanced`
 
 Only suggest new concepts for genuinely novel topics not covered by the existing registry. Prefer finding an existing registry concept that covers the same ground.

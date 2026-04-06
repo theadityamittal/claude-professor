@@ -79,11 +79,11 @@ For `not_in_registry` concepts, follow the naming convention strictly:
 
 Only suggest new concepts for genuinely novel topics not covered by the existing registry. Prefer finding an existing registry concept that covers the same ground.
 
-## Step 6: Apply the 20-concept cap
+## Step 6: Apply the 12-concept cap
 
 - Count all concepts across `teach_new`, `review`, `skip`, and `not_in_registry`
-- If total <= 20: `overflow` is an empty array
-- If total > 20: keep the 20 highest-priority concepts in the main buckets, move the rest to `overflow`
+- If total <= 12: `overflow` is an empty array
+- If total > 12: keep the 12 highest-priority concepts in the main buckets, move the rest to `overflow`
 - Priority order: `teach_new` > `review` > `not_in_registry` > `skip`
 - Within each bucket, order by centrality to the task (most central first)
 
@@ -146,6 +146,6 @@ Output ONLY valid JSON in this exact format — no prose, no markdown fences, no
 - **Domains**: Only use domains from the domains.json list. NEVER invent new domain names.
 - **Registry first**: Always prefer matching to an existing registry concept over suggesting a new one.
 - **Naming**: Concept IDs must be lowercase_snake_case with at most 3 words.
-- **Cap**: The four main buckets combined must never exceed 20 concepts. Overflow goes in `overflow`.
+- **Cap**: The four main buckets combined must never exceed 12 concepts. Overflow goes in `overflow`.
 - **Errors**: If any script call fails, include the raw error message in `task_summary` so the professor can handle it.
 - **Output**: Return only the JSON object. Do not wrap it in markdown code fences or add any surrounding text.

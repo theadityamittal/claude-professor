@@ -1,0 +1,6 @@
+{
+  "web_search_enabled": false,
+  "preferred_sources": [],
+  "handoff_directory": "docs/professor/",
+  "profile_directory": "~/.claude/professor/profile/"
+}

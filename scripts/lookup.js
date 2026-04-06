@@ -2,7 +2,7 @@
 
 const path = require('node:path');
 const fs = require('node:fs');
-const { readJSON, ensureDir, parseArgs, daysBetween, isoNow, readMarkdownWithFrontmatter } = require('./utils.js');
+const { readJSON, ensureDir, parseArgs, daysBetween, isoNow, readMarkdownWithFrontmatter, expandHome } = require('./utils.js');
 const { computeRetrievability, determineAction } = require('./fsrs.js');
 
 function search(registryPath, domainsPath, query) {
@@ -111,7 +111,7 @@ if (require.main === module) {
         process.exit(1);
       }
       const conceptIds = args.concepts.split(',').map(s => s.trim());
-      const result = status(conceptIds, args['profile-dir'], args['domains-path'], args['registry-path']);
+      const result = status(conceptIds, expandHome(args['profile-dir']), args['domains-path'], args['registry-path']);
       process.stdout.write(JSON.stringify(result, null, 2) + '\n');
     } else {
       process.stderr.write(`Unknown mode: ${mode}. Use "search" or "status".\n`);

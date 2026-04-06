@@ -23,7 +23,15 @@ function migrate(sourceDir, targetDir) {
   for (const file of files) {
     const domain = path.basename(file, '.json');
     const profile = readJSON(path.join(sourceDir, file));
-    if (!Array.isArray(profile) || profile.length === 0) continue;
+    if (!profile) {
+      process.stderr.write(`Warning: could not read ${file}, skipping\n`);
+      continue;
+    }
+    if (!Array.isArray(profile)) {
+      process.stderr.write(`Warning: ${file} is not a valid profile array, skipping\n`);
+      continue;
+    }
+    if (profile.length === 0) continue;
 
     domainCount++;
 

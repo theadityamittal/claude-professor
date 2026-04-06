@@ -55,7 +55,9 @@ function createComponent(options) {
   }
 
   const filePath = path.join(outputDir, `${id}.md`);
-  fs.writeFileSync(filePath, lines.join('\n'));
+  const tmpPath = filePath + '.tmp';
+  fs.writeFileSync(tmpPath, lines.join('\n'), 'utf-8');
+  fs.renameSync(tmpPath, filePath);
 
   return { success: true, path: filePath };
 }
@@ -99,7 +101,9 @@ function updateIndex(architectureDir, projectName, branch, summary) {
 
   lines.push('');
   const indexPath = path.join(architectureDir, '_index.md');
-  fs.writeFileSync(indexPath, lines.join('\n'));
+  const tmpPath = indexPath + '.tmp';
+  fs.writeFileSync(tmpPath, lines.join('\n'), 'utf-8');
+  fs.renameSync(tmpPath, indexPath);
 
   return { success: true, components: components.length };
 }
@@ -132,9 +136,17 @@ function detectChanges(architectureDir, scanDirs) {
               newDirs.push(path.join(subPath, dirName));
             }
           }
-        } catch { /* ignore unreadable subdirs */ }
+        } catch (err) {
+          if (err.code !== 'ENOENT' && err.code !== 'EACCES') {
+            process.stderr.write(`Warning: error scanning ${subPath}: ${err.message}\n`);
+          }
+        }
       }
-    } catch { /* ignore unreadable scan dirs */ }
+    } catch (err) {
+      if (err.code !== 'ENOENT' && err.code !== 'EACCES') {
+        process.stderr.write(`Warning: error scanning ${scanDir}: ${err.message}\n`);
+      }
+    }
   }
 
   const detected = newDirs.length > 0;
@@ -151,10 +163,20 @@ if (require.main === module) {
   const mode = process.argv[2];
   const args = parseArgs(process.argv.slice(3));
 
+  function validateArgs(required, usage) {
+    const missing = required.filter(k => !args[k]);
+    if (missing.length > 0) {
+      process.stderr.write(`Missing required arguments: ${missing.join(', ')}\n`);
+      process.stderr.write(`Usage: node graph.js ${usage}\n`);
+      process.exit(1);
+    }
+  }
+
   try {
     let result;
     switch (mode) {
       case 'create-component':
+        validateArgs(['id', 'output-dir'], 'create-component --id ID --output-dir PATH [--description TEXT] [--concepts LIST]');
         result = createComponent({
           id: args.id,
           description: args.description,
@@ -167,6 +189,7 @@ if (require.main === module) {
         });
         break;
       case 'update-index':
+        validateArgs(['architecture-dir', 'project-name', 'branch'], 'update-index --architecture-dir PATH --project-name NAME --branch NAME');
         result = updateIndex(
           args['architecture-dir'],
           args['project-name'],
@@ -175,6 +198,7 @@ if (require.main === module) {
         );
         break;
       case 'detect-changes':
+        validateArgs(['architecture-dir', 'scan-dirs'], 'detect-changes --architecture-dir PATH --scan-dirs DIRS');
         result = detectChanges(
           args['architecture-dir'],
           args['scan-dirs'],

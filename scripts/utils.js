@@ -67,7 +67,12 @@ function readMarkdownWithFrontmatter(filePath) {
   if (fmEnd === -1) throw new Error(`Unclosed frontmatter in ${filePath}`);
 
   const jsonStr = raw.slice(fmContentStart, fmEnd);
-  const frontmatter = JSON.parse(jsonStr);
+  let frontmatter;
+  try {
+    frontmatter = JSON.parse(jsonStr);
+  } catch (parseErr) {
+    throw new Error(`Invalid JSON in frontmatter of ${filePath}: ${parseErr.message}`);
+  }
   const body = raw.slice(fmEnd + '\n---'.length).replace(/^\n/, '');
 
   return { frontmatter, body };

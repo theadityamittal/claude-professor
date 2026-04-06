@@ -2,7 +2,7 @@
 
 const path = require('node:path');
 const { ensureDir, isoNow, daysBetween, parseArgs,
-        readMarkdownWithFrontmatter, writeMarkdownFile } = require('./utils.js');
+        readMarkdownWithFrontmatter, writeMarkdownFile, expandHome } = require('./utils.js');
 const {
   computeNewStability, computeNewDifficulty, computeRetrievability,
   getInitialStability, getInitialDifficulty,
@@ -99,7 +99,7 @@ if (require.main === module) {
       grade: args.grade,
       isRegistryConcept: args['is-registry-concept'] || 'false',
       difficultyTier: args['difficulty-tier'] || 'intermediate',
-      profileDir: args['profile-dir'],
+      profileDir: expandHome(args['profile-dir']),
       documentationUrl: args['documentation-url'],
       notes: args.notes,
     });

@@ -43,13 +43,16 @@ function update(sessionDir, updates) {
   const state = readJSON(sessionPath);
   if (!state) throw new Error('No active session to update');
 
-  if (updates.phase) state.phase = updates.phase;
-  if (updates.contextSnapshot) state.context_snapshot = updates.contextSnapshot;
-  if (updates.chosenOption) state.chosen_option = updates.chosenOption;
-  if (updates.architectureLoaded) state.architecture_loaded = updates.architectureLoaded === 'true';
-  state.last_updated = isoNow();
+  const updatedState = {
+    ...state,
+    ...(updates.phase && { phase: updates.phase }),
+    ...(updates.contextSnapshot && { context_snapshot: updates.contextSnapshot }),
+    ...(updates.chosenOption && { chosen_option: updates.chosenOption }),
+    ...(updates.architectureLoaded && { architecture_loaded: updates.architectureLoaded === 'true' }),
+    last_updated: isoNow(),
+  };
 
-  writeJSON(sessionPath, state);
+  writeJSON(sessionPath, updatedState);
   return { success: true };
 }
 
@@ -89,16 +92,28 @@ if (require.main === module) {
   const mode = process.argv[2];
   const args = parseArgs(process.argv.slice(3));
 
+  function validateArgs(required, usage) {
+    const missing = required.filter(k => !args[k]);
+    if (missing.length > 0) {
+      process.stderr.write(`Missing required arguments: ${missing.join(', ')}\n`);
+      process.stderr.write(`Usage: node session.js ${usage}\n`);
+      process.exit(1);
+    }
+  }
+
   try {
     let result;
     switch (mode) {
       case 'create':
+        validateArgs(['session-dir', 'feature', 'branch'], 'create --session-dir PATH --feature NAME --branch NAME');
         result = create(args['session-dir'], args.feature, args.branch);
         break;
       case 'load':
+        validateArgs(['session-dir'], 'load --session-dir PATH');
         result = load(args['session-dir']);
         break;
       case 'update':
+        validateArgs(['session-dir'], 'update --session-dir PATH [--phase PHASE] [--context-snapshot TEXT]');
         result = update(args['session-dir'], {
           phase: args.phase,
           contextSnapshot: args['context-snapshot'],
@@ -107,6 +122,7 @@ if (require.main === module) {
         });
         break;
       case 'add-concept':
+        validateArgs(['session-dir', 'concept-id'], 'add-concept --session-dir PATH --concept-id ID [--domain D] [--status S] [--grade G]');
         result = addConcept(args['session-dir'], {
           conceptId: args['concept-id'],
           domain: args.domain,
@@ -117,6 +133,7 @@ if (require.main === module) {
         });
         break;
       case 'clear':
+        validateArgs(['session-dir'], 'clear --session-dir PATH');
         result = clear(args['session-dir']);
         break;
       default:

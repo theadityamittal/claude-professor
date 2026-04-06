@@ -86,7 +86,10 @@ describe('lookup status mode', () => {
   });
 
   it('computes retrievability for known concepts', () => {
-    const profileData = [{
+    const conceptDir = path.join(profileDir, 'databases');
+    fs.mkdirSync(conceptDir, { recursive: true });
+
+    const frontmatter = {
       concept_id: 'connection_pooling',
       domain: 'databases',
       is_registry_concept: true,
@@ -97,9 +100,9 @@ describe('lookup status mode', () => {
       fsrs_stability: 10.0,
       fsrs_difficulty: 5.0,
       documentation_url: null,
-      notes: null,
-    }];
-    fs.writeFileSync(path.join(profileDir, 'databases.json'), JSON.stringify(profileData));
+    };
+    const content = '---json\n' + JSON.stringify(frontmatter, null, 2) + '\n---\n\n# Connection Pooling\n';
+    fs.writeFileSync(path.join(conceptDir, 'connection_pooling.md'), content);
 
     const result = runLookup([
       'status',

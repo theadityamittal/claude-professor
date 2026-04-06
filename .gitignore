@@ -1,0 +1,23 @@
+# Dependencies
+node_modules/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+*.swp
+*.swo
+*~
+
+# Claude Code
+.claude/
+
+# Session state (ephemeral, created/deleted by /backend-architect)
+.session-state.json
+
+# Coverage
+coverage/
+
+# Obsidian
+.obsidian/

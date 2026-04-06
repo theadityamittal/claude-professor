@@ -1,7 +1,8 @@
 'use strict';
 
 const path = require('node:path');
-const { readJSON, ensureDir, parseArgs, daysBetween, isoNow } = require('./utils.js');
+const fs = require('node:fs');
+const { readJSON, ensureDir, parseArgs, daysBetween, isoNow, readMarkdownWithFrontmatter, expandHome } = require('./utils.js');
 const { computeRetrievability, determineAction } = require('./fsrs.js');
 
 function search(registryPath, domainsPath, query) {
@@ -37,8 +38,8 @@ function status(conceptIds, profileDir, domainsPath, registryPath) {
     if (!domain) {
       const domains = readJSON(domainsPath) || [];
       for (const d of domains) {
-        const profile = readJSON(path.join(profileDir, `${d.id}.json`));
-        if (profile && profile.some(c => c.concept_id === conceptId)) {
+        const conceptPath = path.join(profileDir, d.id, `${conceptId}.md`);
+        if (fs.existsSync(conceptPath)) {
           domain = d.id;
           break;
         }
@@ -54,10 +55,10 @@ function status(conceptIds, profileDir, domainsPath, registryPath) {
       };
     }
 
-    const profile = readJSON(path.join(profileDir, `${domain}.json`)) || [];
-    const entry = profile.find(c => c.concept_id === conceptId);
+    const conceptPath = path.join(profileDir, domain, `${conceptId}.md`);
+    const result = readMarkdownWithFrontmatter(conceptPath);
 
-    if (!entry) {
+    if (!result) {
       return {
         concept_id: conceptId, domain, status: 'new',
         retrievability: null, stability: null, difficulty: null,
@@ -66,6 +67,7 @@ function status(conceptIds, profileDir, domainsPath, registryPath) {
       };
     }
 
+    const entry = result.frontmatter;
     const elapsed = daysBetween(entry.last_reviewed, now);
     const retrievability = computeRetrievability(entry.fsrs_stability, elapsed);
     const action = determineAction(retrievability);
@@ -75,7 +77,7 @@ function status(conceptIds, profileDir, domainsPath, registryPath) {
       retrievability: Math.round(retrievability * 1000) / 1000,
       stability: entry.fsrs_stability,
       difficulty: entry.fsrs_difficulty,
-      grade_history: entry.review_history.map(r => r.grade),
+      grade_history: (entry.review_history || []).map(r => r.grade),
       last_reviewed: entry.last_reviewed,
       days_since_review: Math.round(elapsed * 10) / 10,
       documentation_url: entry.documentation_url || null,
@@ -109,7 +111,7 @@ if (require.main === module) {
         process.exit(1);
       }
       const conceptIds = args.concepts.split(',').map(s => s.trim());
-      const result = status(conceptIds, args['profile-dir'], args['domains-path'], args['registry-path']);
+      const result = status(conceptIds, expandHome(args['profile-dir']), args['domains-path'], args['registry-path']);
       process.stdout.write(JSON.stringify(result, null, 2) + '\n');
     } else {
       process.stderr.write(`Unknown mode: ${mode}. Use "search" or "status".\n`);

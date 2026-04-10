@@ -62,7 +62,7 @@ function enrichFrontmatter(frontmatter, targetDomain) {
     ...rest,
     domain: targetDomain,
     is_seed_concept: is_registry_concept !== undefined ? is_registry_concept : (frontmatter.is_seed_concept ?? false),
-    difficulty_tier: difficulty_tier === 'foundational' ? 'beginner' : difficulty_tier,
+    difficulty_tier: difficulty_tier === 'foundational' ? 'beginner' : (difficulty_tier || 'intermediate'),
     level: frontmatter.level !== undefined ? frontmatter.level : 1,
     parent_concept: frontmatter.parent_concept !== undefined ? frontmatter.parent_concept : null,
     aliases: frontmatter.aliases !== undefined ? frontmatter.aliases : [],
@@ -100,7 +100,10 @@ function migrateFile(srcPath, profileDir, sourceDomain, conceptId) {
   if (targetDomain === null) {
     // In-place: just enrich fields without moving
     const parsed = readMarkdownWithFrontmatter(srcPath);
-    if (!parsed) return 'error';
+    if (!parsed) {
+      process.stderr.write(`Warning: could not read ${srcPath}\n`);
+      return 'error';
+    }
     const enriched = enrichFrontmatter(parsed.frontmatter, sourceDomain);
     writeMarkdownFile(srcPath, enriched, parsed.body);
     return 'enriched';
@@ -109,7 +112,10 @@ function migrateFile(srcPath, profileDir, sourceDomain, conceptId) {
   // If source domain === target domain, also in-place enrichment only
   if (targetDomain === sourceDomain) {
     const parsed = readMarkdownWithFrontmatter(srcPath);
-    if (!parsed) return 'error';
+    if (!parsed) {
+      process.stderr.write(`Warning: could not read ${srcPath}\n`);
+      return 'error';
+    }
     const enriched = enrichFrontmatter(parsed.frontmatter, targetDomain);
     writeMarkdownFile(srcPath, enriched, parsed.body);
     return 'enriched';
@@ -124,12 +130,19 @@ function migrateFile(srcPath, profileDir, sourceDomain, conceptId) {
   }
 
   const parsed = readMarkdownWithFrontmatter(srcPath);
-  if (!parsed) return 'error';
+  if (!parsed) {
+    process.stderr.write(`Warning: could not read ${srcPath}\n`);
+    return 'error';
+  }
 
   const enriched = enrichFrontmatter(parsed.frontmatter, targetDomain);
   ensureDir(destDir);
   writeMarkdownFile(destPath, enriched, parsed.body);
-  fs.unlinkSync(srcPath);
+  try {
+    fs.unlinkSync(srcPath);
+  } catch (err) {
+    process.stderr.write(`Warning: moved ${conceptId} to ${destPath} but could not delete source: ${err.message}\n`);
+  }
   return 'moved';
 }
 
@@ -187,8 +200,8 @@ function migrate(profileDir) {
         if (remaining.length === 0) {
           fs.rmdirSync(domainDir);
         }
-      } catch (_) {
-        // Ignore cleanup errors
+      } catch (err) {
+        process.stderr.write(`Warning: could not remove directory ${domainDir}: ${err.message}\n`);
       }
     }
   }

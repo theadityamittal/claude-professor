@@ -123,14 +123,14 @@ node ${CLAUDE_PLUGIN_ROOT}/scripts/update.js \
   --registry-path ${CLAUDE_PLUGIN_ROOT}/data/concepts_registry.json
 ```
 
-**Subsequent review (status was `teach_new` or `review`):** Append to the Notes section only — do not replace the existing body:
+**Subsequent review (status was `teach_new` or `review`):** Append to the Notes section only — do not replace the existing body. Use the Read tool to read the current body from `~/.claude/professor/concepts/{domain}/{concept_id}.md`, then append the new review note to the Notes section and pass the full updated body via `--body`:
 
 ```bash
 node ${CLAUDE_PLUGIN_ROOT}/scripts/update.js \
   --concept "{concept_id}" \
-  --append-notes "Reviewed in context of {task context}. Grade: {Grade Name}. {One sentence on what was reinforced or corrected.}" \
-  --profile-dir ~/.claude/professor/concepts/ \
-  --registry-path ${CLAUDE_PLUGIN_ROOT}/data/concepts_registry.json
+  --domain "{domain}" \
+  --body "{full updated body with appended review note}" \
+  --profile-dir ~/.claude/professor/concepts/
 ```
 
 If the script fails, note it but do not block returning the grade summary.

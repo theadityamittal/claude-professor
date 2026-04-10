@@ -161,6 +161,37 @@ describe('update.js Phase 3 — new fields', () => {
     assert.equal(frontmatter.concept_id, 'memcached');
   });
 
+  it('--create-parent does not overwrite an existing concept with FSRS history', () => {
+    // Create concept with a grade-3 review
+    runUpdate([
+      '--concept', 'caching_patterns',
+      '--domain', 'databases',
+      '--grade', '3',
+      '--profile-dir', profileDir,
+    ]);
+
+    const filePath = path.join(profileDir, 'databases', 'caching_patterns.md');
+    const before = readMarkdownWithFrontmatter(filePath);
+    assert.ok(before.frontmatter.fsrs_stability > 0);
+    assert.equal(before.frontmatter.review_history.length, 1);
+
+    // Call --create-parent on the same concept
+    const result = runUpdate([
+      '--concept', 'caching_patterns',
+      '--domain', 'databases',
+      '--create-parent',
+      '--level', '1',
+      '--profile-dir', profileDir,
+    ]);
+    assert.equal(result.success, true);
+    assert.equal(result.action, 'already_exists');
+
+    // FSRS data must be preserved
+    const after = readMarkdownWithFrontmatter(filePath);
+    assert.equal(after.frontmatter.fsrs_stability, before.frontmatter.fsrs_stability);
+    assert.equal(after.frontmatter.review_history.length, 1);
+  });
+
   it('existing grade-based update still works (regression)', () => {
     runUpdate([
       '--concept', 'kafka',

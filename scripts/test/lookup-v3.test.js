@@ -92,7 +92,7 @@ describe('list-concepts mode', () => {
     const result = runLookup([
       'list-concepts',
       '--domains', 'distributed_systems',
-      '--registry', registryPath,
+      '--registry-path', registryPath,
       '--profile-dir', profileDir,
     ]);
 
@@ -107,7 +107,7 @@ describe('list-concepts mode', () => {
     const result = runLookup([
       'list-concepts',
       '--domains', 'distributed_systems,networking',
-      '--registry', registryPath,
+      '--registry-path', registryPath,
       '--profile-dir', profileDir,
     ]);
 
@@ -121,7 +121,7 @@ describe('list-concepts mode', () => {
     const result = runLookup([
       'list-concepts',
       '--domains', 'distributed_systems',
-      '--registry', registryPath,
+      '--registry-path', registryPath,
       '--profile-dir', profileDir,
     ]);
 
@@ -152,7 +152,7 @@ describe('list-concepts mode', () => {
     const result = runLookup([
       'list-concepts',
       '--domains', 'distributed_systems',
-      '--registry', registryPath,
+      '--registry-path', registryPath,
       '--profile-dir', profileDir,
     ]);
 
@@ -186,7 +186,7 @@ describe('list-concepts mode', () => {
     const result = runLookup([
       'list-concepts',
       '--domains', 'distributed_systems',
-      '--registry', registryPath,
+      '--registry-path', registryPath,
       '--profile-dir', profileDir,
     ]);
 
@@ -205,7 +205,7 @@ describe('reconcile mode', () => {
       'reconcile',
       '--mode', 'exact',
       '--candidate', 'oauth2',
-      '--registry', registryPath,
+      '--registry-path', registryPath,
       '--profile-dir', profileDir,
     ]);
 
@@ -234,7 +234,7 @@ describe('reconcile mode', () => {
       'reconcile',
       '--mode', 'exact',
       '--candidate', 'bgp',
-      '--registry', registryPath,
+      '--registry-path', registryPath,
       '--profile-dir', profileDir,
     ]);
 
@@ -250,7 +250,7 @@ describe('reconcile mode', () => {
       'reconcile',
       '--mode', 'alias',
       '--candidate', 'oauth',
-      '--registry', registryPath,
+      '--registry-path', registryPath,
       '--profile-dir', profileDir,
     ]);
 
@@ -265,7 +265,7 @@ describe('reconcile mode', () => {
       'reconcile',
       '--mode', 'alias',
       '--candidate', 'Distributed Consensus',
-      '--registry', registryPath,
+      '--registry-path', registryPath,
       '--profile-dir', profileDir,
     ]);
 
@@ -278,7 +278,7 @@ describe('reconcile mode', () => {
       'reconcile',
       '--mode', 'exact',
       '--candidate', 'totally_unknown_concept',
-      '--registry', registryPath,
+      '--registry-path', registryPath,
       '--profile-dir', profileDir,
     ]);
 
@@ -290,7 +290,7 @@ describe('reconcile mode', () => {
       'reconcile',
       '--mode', 'alias',
       '--candidate', 'nonexistent_alias',
-      '--registry', registryPath,
+      '--registry-path', registryPath,
       '--profile-dir', profileDir,
     ]);
 

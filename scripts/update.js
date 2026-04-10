@@ -24,6 +24,10 @@ function update(options) {
 
   ensureDir(profileDir);
   const conceptPath = path.join(profileDir, domain, `${concept}.md`);
+  const resolved = path.resolve(conceptPath);
+  if (!resolved.startsWith(path.resolve(profileDir))) {
+    throw new Error(`Invalid path: ${resolved} is outside profile directory`);
+  }
   const existing = readMarkdownWithFrontmatter(conceptPath);
   const now = isoNow();
 
@@ -54,6 +58,9 @@ function update(options) {
 
   // --- --create-parent path (no grade needed) ---
   if (createParent) {
+    if (existing) {
+      return { success: true, concept_id: concept, domain, action: 'already_exists' };
+    }
     const frontmatter = {
       concept_id: concept,
       domain,
@@ -187,7 +194,8 @@ if (require.main === module) {
       domain: args.domain,
       grade: args.grade,
       isRegistryConcept: args['is-registry-concept'] || 'false',
-      isSeedConcept: args['is-seed-concept'] === true || args['is-seed-concept'] === 'true',
+      isSeedConcept: args['is-seed-concept'] === true || args['is-seed-concept'] === 'true'
+        || args['is-registry-concept'] === true || args['is-registry-concept'] === 'true',
       difficultyTier: args['difficulty-tier'] || 'intermediate',
       profileDir: expandHome(args['profile-dir']),
       documentationUrl: args['documentation-url'],

@@ -128,7 +128,10 @@ function _buildConceptMap(registryPath, profileDir) {
       if (!result || !result.frontmatter) continue;
       const fm = result.frontmatter;
       const conceptId = fm.concept_id;
-      if (!conceptId) continue;
+      if (!conceptId) {
+        process.stderr.write(`Warning: ${path.join(domainPath, file)} missing concept_id — skipping\n`);
+        continue;
+      }
       map.set(conceptId, {
         concept_id: conceptId,
         domain: fm.domain || domainName,
@@ -224,25 +227,25 @@ if (require.main === module) {
       const result = status(conceptIds, expandHome(args['profile-dir']), args['domains-path'], args['registry-path']);
       process.stdout.write(JSON.stringify(result, null, 2) + '\n');
     } else if (mode === 'list-concepts') {
-      const required = ['domains', 'registry', 'profile-dir'];
+      const required = ['domains', 'registry-path', 'profile-dir'];
       const missing = required.filter(k => !args[k]);
       if (missing.length > 0) {
         process.stderr.write(`Missing required arguments: ${missing.join(', ')}\n`);
-        process.stderr.write('Usage: node lookup.js list-concepts --domains DOMAINS --registry PATH --profile-dir PATH\n');
+        process.stderr.write('Usage: node lookup.js list-concepts --domains DOMAINS --registry-path PATH --profile-dir PATH\n');
         process.exit(1);
       }
       const domains = args.domains.split(',').map(s => s.trim()).filter(Boolean);
-      const result = listConcepts(domains, args.registry, expandHome(args['profile-dir']));
+      const result = listConcepts(domains, args['registry-path'], expandHome(args['profile-dir']));
       process.stdout.write(JSON.stringify(result, null, 2) + '\n');
     } else if (mode === 'reconcile') {
-      const required = ['mode', 'candidate', 'registry', 'profile-dir'];
+      const required = ['mode', 'candidate', 'registry-path', 'profile-dir'];
       const missing = required.filter(k => !args[k]);
       if (missing.length > 0) {
         process.stderr.write(`Missing required arguments: ${missing.join(', ')}\n`);
-        process.stderr.write('Usage: node lookup.js reconcile --mode exact|alias --candidate NAME --registry PATH --profile-dir PATH\n');
+        process.stderr.write('Usage: node lookup.js reconcile --mode exact|alias --candidate NAME --registry-path PATH --profile-dir PATH\n');
         process.exit(1);
       }
-      const result = reconcile(args.mode, args.candidate, args.registry, expandHome(args['profile-dir']));
+      const result = reconcile(args.mode, args.candidate, args['registry-path'], expandHome(args['profile-dir']));
       process.stdout.write(JSON.stringify(result, null, 2) + '\n');
     } else {
       process.stderr.write(`Unknown mode: ${mode}. Use "search", "status", "list-concepts", or "reconcile".\n`);

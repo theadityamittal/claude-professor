@@ -63,8 +63,8 @@ List all registry concepts and judge whether any existing concept is semanticall
 ```bash
 node ${CLAUDE_PLUGIN_ROOT}/scripts/lookup.js list-concepts \
   --registry-path ${CLAUDE_PLUGIN_ROOT}/data/concepts_registry.json \
-  --domains-path ${CLAUDE_PLUGIN_ROOT}/data/domains.json \
-  --domains "{comma-separated domain hints if provided}"
+  --domains "{comma-separated domain hints if provided}" \
+  --profile-dir ~/.claude/professor/concepts/
 ```
 
 Apply LLM judgment: is the candidate essentially the same concept as an existing registry entry? Use these criteria:

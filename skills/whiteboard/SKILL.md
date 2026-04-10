@@ -300,7 +300,7 @@ For each concept taught during the session (from `concepts_checked` in session s
 ```bash
 node ${CLAUDE_PLUGIN_ROOT}/scripts/update.js \
   --concept "{id}" --domain "{domain}" --grade {1-4} \
-  --is-registry-concept {true|false} --difficulty-tier "{tier}" \
+  --is-seed-concept {true|false} --difficulty-tier "{tier}" \
   --profile-dir ~/.claude/professor/concepts/ \
   --notes "{feature context}"
 ```

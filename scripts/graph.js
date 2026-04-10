@@ -250,7 +250,7 @@ function scan(dir, budget) {
     .sort((a, b) => a[0].localeCompare(b[0]))
     .map(([p, file_count]) => ({ path: p, file_count }));
 
-  return { project_root: dir, scan_budget: budget, files, directories, total_files: files.length, truncated };
+  return { project_root: dir, scan_budget: budget, files, directories, total_files: allFiles.length, truncated };
 }
 
 if (require.main === module) {

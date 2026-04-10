@@ -183,6 +183,7 @@ describe('graph.js scan', () => {
 
     assert.ok(result.files.length <= 3);
     assert.equal(result.truncated, true);
+    assert.strictEqual(result.total_files, 10, 'total_files must report actual count, not truncated');
   });
 
   it('does not truncate when under budget', () => {

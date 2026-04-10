@@ -159,6 +159,100 @@ function detectChanges(architectureDir, scanDirs) {
   };
 }
 
+/**
+ * Deterministic filesystem walk. Returns compact manifest sorted by type priority.
+ * @param {string} dir - Absolute path to the directory to scan
+ * @param {number} budget - Max file count to include in the manifest
+ * @returns {{ project_root, scan_budget, files, directories, total_files, truncated }}
+ */
+function scan(dir, budget) {
+  const EXCLUDED = new Set([
+    'node_modules', '.git', 'dist', 'build', 'coverage',
+    '__pycache__', '.next', '.nuxt', 'vendor', '.cache', '.build',
+  ]);
+  const LANG_EXT = {
+    js: 'js', jsx: 'js', mjs: 'js', cjs: 'js',
+    ts: 'ts', tsx: 'ts',
+    py: 'py', go: 'go', rs: 'rs', java: 'java', rb: 'rb', php: 'php',
+  };
+  const MANIFEST_NAMES = new Set([
+    'package.json', 'cargo.toml', 'go.mod', 'requirements.txt',
+    'pyproject.toml', 'pom.xml', 'composer.json', 'gemfile',
+    'build.gradle', 'setup.py',
+  ]);
+  const CONFIG_NAMES = new Set([
+    'dockerfile', 'docker-compose.yml', 'docker-compose.yaml',
+    'tsconfig.json', '.env.example',
+  ]);
+  const TYPE_PRIORITY = { manifest: 0, config: 1, source: 2, test: 3, docs: 4, other: 5 };
+
+  function detectLanguage(ext) {
+    return LANG_EXT[ext] || 'other';
+  }
+
+  function detectType(name, relPath) {
+    const lower = name.toLowerCase();
+    if (MANIFEST_NAMES.has(lower)) return 'manifest';
+    if (CONFIG_NAMES.has(lower) || lower.includes('config')) return 'config';
+    const parts = relPath.split(path.sep);
+    const inTestDir = parts.some(p => p === 'test' || p === 'tests' || p === '__tests__');
+    if (inTestDir || lower.includes('.test.') || lower.includes('.spec.')) return 'test';
+    if (['.md', '.txt', '.rst', '.adoc'].some(e => lower.endsWith(e))) return 'docs';
+    const ext = path.extname(lower).slice(1);
+    if (LANG_EXT[ext]) return 'source';
+    return 'other';
+  }
+
+  const allFiles = [];
+
+  function walk(currentDir, relBase) {
+    let entries;
+    try {
+      entries = fs.readdirSync(currentDir, { withFileTypes: true });
+    } catch { return; }
+
+    for (const entry of entries) {
+      if (EXCLUDED.has(entry.name)) continue;
+      // Skip hidden files/dirs except Dockerfile
+      if (entry.name.startsWith('.') && entry.name !== 'Dockerfile') continue;
+      const relPath = relBase ? path.join(relBase, entry.name) : entry.name;
+      if (entry.isDirectory()) {
+        walk(path.join(currentDir, entry.name), relPath);
+      } else if (entry.isFile()) {
+        const ext = path.extname(entry.name).slice(1).toLowerCase();
+        const type = detectType(entry.name, relPath);
+        let size = 0;
+        try { size = fs.statSync(path.join(currentDir, entry.name)).size; } catch {}
+        allFiles.push({ path: relPath, language: detectLanguage(ext), type, size });
+      }
+    }
+  }
+
+  walk(dir, '');
+
+  // Sort by type priority so manifests/configs survive budget trimming
+  allFiles.sort((a, b) =>
+    (TYPE_PRIORITY[a.type] ?? 5) - (TYPE_PRIORITY[b.type] ?? 5)
+  );
+
+  const truncated = allFiles.length > budget;
+  const files = truncated ? allFiles.slice(0, budget) : allFiles;
+
+  // Derive directory summary from the included files only
+  const dirCounts = new Map();
+  for (const f of files) {
+    const d = path.dirname(f.path);
+    if (d !== '.') {
+      dirCounts.set(d, (dirCounts.get(d) || 0) + 1);
+    }
+  }
+  const directories = [...dirCounts.entries()]
+    .sort((a, b) => a[0].localeCompare(b[0]))
+    .map(([p, file_count]) => ({ path: p, file_count }));
+
+  return { project_root: dir, scan_budget: budget, files, directories, total_files: files.length, truncated };
+}
+
 if (require.main === module) {
   const mode = process.argv[2];
   const args = parseArgs(process.argv.slice(3));
@@ -204,6 +298,10 @@ if (require.main === module) {
           args['scan-dirs'],
         );
         break;
+      case 'scan':
+        validateArgs(['dir'], 'scan --dir PATH [--budget N]');
+        result = scan(path.resolve(args.dir), parseInt(args.budget || '100', 10));
+        break;
       default:
         process.stderr.write(`Unknown mode: ${mode}. Use create-component, update-index, or detect-changes.\n`);
         process.exit(1);
@@ -215,4 +313,4 @@ if (require.main === module) {
   }
 }
 
-module.exports = { createComponent, updateIndex, detectChanges };
+module.exports = { createComponent, updateIndex, detectChanges, scan };

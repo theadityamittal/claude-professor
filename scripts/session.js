@@ -88,6 +88,41 @@ function clear(sessionDir) {
   return { success: true };
 }
 
+function gate(sessionDir, requireType) {
+  if (requireType !== 'concepts') {
+    process.stderr.write(`Unknown --require value: "${requireType}". Supported: concepts\n`);
+    process.exit(1);
+  }
+
+  const state = readJSON(getSessionPath(sessionDir));
+
+  if (!state) {
+    process.stdout.write(JSON.stringify({
+      gate: 'open',
+      warning: 'no active session found',
+    }, null, 2) + '\n');
+    return;
+  }
+
+  if (!Array.isArray(state.concepts_checked)) {
+    process.stderr.write(JSON.stringify({
+      error: 'Malformed session state: concepts_checked is missing or not an array',
+      path: getSessionPath(sessionDir),
+    }, null, 2) + '\n');
+    process.exit(1);
+  }
+
+  if (state.concepts_checked.length === 0) {
+    process.stdout.write(JSON.stringify({
+      gate: 'blocked',
+      reason: 'concepts_checked is empty — run concept-agent before proceeding',
+    }, null, 2) + '\n');
+    process.exit(1);
+  }
+
+  process.stdout.write(JSON.stringify({ gate: 'open' }, null, 2) + '\n');
+}
+
 if (require.main === module) {
   const mode = process.argv[2];
   const args = parseArgs(process.argv.slice(3));
@@ -136,8 +171,13 @@ if (require.main === module) {
         validateArgs(['session-dir'], 'clear --session-dir PATH');
         result = clear(args['session-dir']);
         break;
+      case 'gate':
+        validateArgs(['session-dir', 'require'], 'gate --session-dir PATH --require concepts');
+        // gate handles its own stdout/exit; skip shared output
+        gate(args['session-dir'], args.require);
+        return;
       default:
-        process.stderr.write(`Unknown mode: ${mode}. Use create, load, update, add-concept, or clear.\n`);
+        process.stderr.write(`Unknown mode: ${mode}. Use create, load, update, add-concept, clear, or gate.\n`);
         process.exit(1);
     }
     process.stdout.write(JSON.stringify(result, null, 2) + '\n');
@@ -147,4 +187,4 @@ if (require.main === module) {
   }
 }
 
-module.exports = { create, load, update, addConcept, clear };
+module.exports = { create, load, update, addConcept, clear, gate };

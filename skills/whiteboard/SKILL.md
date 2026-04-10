@@ -139,6 +139,8 @@ The developer selects which concerns to discuss. Respect their choice — don't 
 
 From the selected concerns, identify L1 concept candidates — the foundational technical concepts that will underpin the design discussion.
 
+**Filter before submitting:** Only include candidates that are resolvable L1 seed concepts from the registry. Do not submit candidates with no registry entry — terms like `spaced_repetition`, `retrievability`, or `knowledge_graph` are not seed concepts and cannot be resolved in `resolve-only` mode. Non-registry terms belong in Phase 3 LLD via `resolve-or-create` mode.
+
 ```
 Use the Agent tool to spawn concept-agent:
 - description: "Resolve concept candidates"
@@ -189,6 +191,16 @@ node ${CLAUDE_PLUGIN_ROOT}/scripts/session.js add-concept \
 
 ### 1.6: Discuss Selected Requirements
 
+Before discussing any requirement, verify concept-agent has been called:
+
+```bash
+node ${CLAUDE_PLUGIN_ROOT}/scripts/session.js gate \
+  --require concepts \
+  --session-dir docs/professor/
+```
+
+**If this exits non-zero, STOP.** Do not begin requirement discussion. Go back to Phase 1.4, identify L1 candidates, and call concept-agent first.
+
 For each selected requirement, one at a time:
 - Present the concern and its constraints
 - Ask the developer's preference or current thinking
@@ -207,6 +219,16 @@ node ${CLAUDE_PLUGIN_ROOT}/scripts/session.js update \
 ## Phase 2: High-Level Design (HLD)
 
 ### 2.1: Propose Design Options
+
+Before proposing any design options, verify concept-agent has been called:
+
+```bash
+node ${CLAUDE_PLUGIN_ROOT}/scripts/session.js gate \
+  --require concepts \
+  --session-dir docs/professor/
+```
+
+**If this exits non-zero, STOP.** Do not propose design options until concept-agent has been called and concepts are recorded in session state.
 
 Propose 2-3 design options with clear tradeoffs. Lead with your recommendation.
 
@@ -329,7 +351,7 @@ Present the design document path and a brief summary of what was covered.
 
 Use the session script for all state management:
 - Path: `${CLAUDE_PLUGIN_ROOT}/scripts/session.js`
-- Operations: `create`, `load`, `update`, `add-concept`, `clear`
+- Operations: `create`, `load`, `update`, `add-concept`, `clear`, `gate`
 - Session file: `docs/professor/.session-state.json`
 
 Session state tracks:

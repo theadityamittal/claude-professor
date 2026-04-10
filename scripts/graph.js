@@ -213,8 +213,8 @@ function scan(dir, budget) {
 
     for (const entry of entries) {
       if (EXCLUDED.has(entry.name)) continue;
-      // Skip hidden files/dirs except Dockerfile
-      if (entry.name.startsWith('.') && entry.name !== 'Dockerfile') continue;
+      // Skip hidden files/dirs except Dockerfile and .env.example
+      if (entry.name.startsWith('.') && entry.name !== 'Dockerfile' && entry.name !== '.env.example') continue;
       const relPath = relBase ? path.join(relBase, entry.name) : entry.name;
       if (entry.isDirectory()) {
         walk(path.join(currentDir, entry.name), relPath);
@@ -303,7 +303,7 @@ if (require.main === module) {
         result = scan(path.resolve(args.dir), parseInt(args.budget || '100', 10));
         break;
       default:
-        process.stderr.write(`Unknown mode: ${mode}. Use create-component, update-index, or detect-changes.\n`);
+        process.stderr.write(`Unknown mode: ${mode}. Use create-component, update-index, detect-changes, or scan.\n`);
         process.exit(1);
     }
     process.stdout.write(JSON.stringify(result, null, 2) + '\n');

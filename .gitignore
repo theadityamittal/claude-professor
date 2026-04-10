@@ -12,6 +12,7 @@ Thumbs.db
 
 # Claude Code
 .claude/
+.superpowers
 
 # Session state (ephemeral, created/deleted by /backend-architect)
 .session-state.json

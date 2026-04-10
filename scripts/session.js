@@ -88,6 +88,33 @@ function clear(sessionDir) {
   return { success: true };
 }
 
+function gate(sessionDir, require) {
+  if (require !== 'concepts') {
+    process.stderr.write(`Unknown --require value: "${require}". Supported: concepts\n`);
+    process.exit(1);
+  }
+
+  const state = readJSON(getSessionPath(sessionDir));
+
+  if (!state) {
+    process.stdout.write(JSON.stringify({
+      gate: 'open',
+      warning: 'no active session found',
+    }, null, 2) + '\n');
+    return;
+  }
+
+  if (state.concepts_checked.length === 0) {
+    process.stdout.write(JSON.stringify({
+      gate: 'blocked',
+      reason: 'concepts_checked is empty — run concept-agent before proceeding',
+    }, null, 2) + '\n');
+    process.exit(1);
+  }
+
+  process.stdout.write(JSON.stringify({ gate: 'open' }, null, 2) + '\n');
+}
+
 if (require.main === module) {
   const mode = process.argv[2];
   const args = parseArgs(process.argv.slice(3));
@@ -136,6 +163,10 @@ if (require.main === module) {
         validateArgs(['session-dir'], 'clear --session-dir PATH');
         result = clear(args['session-dir']);
         break;
+      case 'gate':
+        validateArgs(['session-dir', 'require'], 'gate --session-dir PATH --require concepts');
+        gate(args['session-dir'], args.require);
+        return;
       default:
         process.stderr.write(`Unknown mode: ${mode}. Use create, load, update, add-concept, or clear.\n`);
         process.exit(1);
@@ -147,4 +178,4 @@ if (require.main === module) {
   }
 }
 
-module.exports = { create, load, update, addConcept, clear };
+module.exports = { create, load, update, addConcept, clear, gate };

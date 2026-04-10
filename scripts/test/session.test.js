@@ -5,7 +5,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const os = require('node:os');
-const { execFileSync } = require('node:child_process');
+const { execFileSync, spawnSync } = require('node:child_process');
 
 let tmpDir, sessionDir;
 const scriptPath = path.resolve(__dirname, '..', 'session.js');
@@ -16,6 +16,18 @@ function runSession(args) {
     timeout: 5000,
   });
   return JSON.parse(result);
+}
+
+function runSessionRaw(args) {
+  const result = spawnSync('node', [scriptPath, ...args], {
+    encoding: 'utf-8',
+    timeout: 5000,
+  });
+  return {
+    status: result.status,
+    stdout: result.stdout ? JSON.parse(result.stdout) : null,
+    stderr: result.stderr,
+  };
 }
 
 beforeEach(() => {
@@ -126,5 +138,53 @@ describe('session.js', () => {
   it('clear on non-existent session succeeds silently', () => {
     const r = runSession(['clear', '--session-dir', sessionDir]);
     assert.equal(r.success, true);
+  });
+
+  describe('gate', () => {
+    it('opens when concepts_checked is non-empty', () => {
+      runSession([
+        'create', '--feature', 'Test', '--branch', 'main', '--session-dir', sessionDir,
+      ]);
+      runSession([
+        'add-concept', '--session-dir', sessionDir,
+        '--concept-id', 'websocket', '--domain', 'networking', '--status', 'taught',
+      ]);
+      const result = runSessionRaw([
+        'gate', '--require', 'concepts', '--session-dir', sessionDir,
+      ]);
+      assert.equal(result.status, 0);
+      assert.equal(result.stdout.gate, 'open');
+    });
+
+    it('blocks when concepts_checked is empty', () => {
+      runSession([
+        'create', '--feature', 'Test', '--branch', 'main', '--session-dir', sessionDir,
+      ]);
+      const result = runSessionRaw([
+        'gate', '--require', 'concepts', '--session-dir', sessionDir,
+      ]);
+      assert.equal(result.status, 1);
+      assert.equal(result.stdout.gate, 'blocked');
+      assert.ok(result.stdout.reason.includes('concepts_checked is empty'));
+    });
+
+    it('opens with warning when no session exists', () => {
+      const result = runSessionRaw([
+        'gate', '--require', 'concepts', '--session-dir', sessionDir,
+      ]);
+      assert.equal(result.status, 0);
+      assert.equal(result.stdout.gate, 'open');
+      assert.ok(result.stdout.warning);
+    });
+
+    it('exits non-zero on unknown --require value', () => {
+      runSession([
+        'create', '--feature', 'Test', '--branch', 'main', '--session-dir', sessionDir,
+      ]);
+      const result = runSessionRaw([
+        'gate', '--require', 'unknown_value', '--session-dir', sessionDir,
+      ]);
+      assert.equal(result.status, 1);
+    });
   });
 });

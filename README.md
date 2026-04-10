@@ -135,7 +135,10 @@ claude-professor/
 │   ├── graph.js                  # Architecture graph management
 │   ├── detect-changes.js         # Structural change detection hook
 │   ├── migrate-v3.js             # Phase 2 → Phase 3 migration
-│   └── test/                     # Automated tests (137 tests, node:test)
+│   └── test/                     # Automated tests (151 tests, node:test)
+├── tests/
+│   └── cli/
+│       └── test-whiteboard.sh    # CLI integration test
 ├── data/
 │   ├── domains/                  # 18 domain markdown files with boundaries
 │   ├── domains.json              # Domain ID list (for script lookups)
@@ -264,6 +267,32 @@ User config at `~/.claude/professor/config.json`:
 | `preferred_sources` | string[] | `[]` | Documentation domains to prefer |
 | `handoff_directory` | string | `"docs/professor/"` | Project-relative path for design documents |
 | `profile_directory` | string | `"~/.claude/professor/concepts/"` | Where your learning profile is stored |
+
+## Testing
+
+### Unit & Integration Tests (CI-safe)
+
+```bash
+node --test scripts/test/*.test.js
+```
+
+151 tests covering FSRS math, lookup modes, update features, migration, utils, session state, graph management, and a full lifecycle simulation.
+
+### Lifecycle Simulation
+
+```bash
+node --test scripts/test/lifecycle.test.js
+```
+
+Simulates the complete concept chain without API calls: L1 resolution → teach + grade → FSRS status check → body writing → L2 creation with parent ensure → create-parent guard → Phase 2 migration.
+
+### CLI Integration (requires API access)
+
+```bash
+bash tests/cli/test-whiteboard.sh
+```
+
+Validates plugin structure, registry format (407 concepts, 18 domains), domain files, and script health.
 
 ## Contributing
 

@@ -179,7 +179,7 @@ Dispatch an Explore subagent with this exact prompt:
 > `{"broken_links": <count>, "missing_concepts": ["concept_id_1", ...], "components_verified": <count>}`
 
 Wait for the subagent to return. Parse its JSON output.
-- If the output cannot be parsed: treat as `{"broken_links": 0, "missing_concepts": [], "components_verified": 0}` and continue.
+- If the output cannot be parsed: report to the developer: "Stage 4 verification failed — architecture files have NOT been verified. Review `docs/professor/architecture/` manually." Continue to Cleanup.
 - If successful: proceed to Cleanup.
 
 ## Cleanup
@@ -213,7 +213,7 @@ Present to the developer:
 
 **`--branch {name}` mode:**
 1. Read base architecture from `docs/professor/architecture/`
-2. Get changed files: `git diff --name-only main...HEAD`
+2. Read the base branch from `docs/professor/architecture/_index.md` (look for the `Branch:` field). If not found, default to `main`. Get changed files: `git diff --name-only {base-branch}...HEAD`
 3. Map changed files to existing components by path matching
 4. Write delta to `docs/professor/branch-deltas/{branch-name}/delta.md` with sections: New Components, Modified Components, New Dependencies, Structural Changes
 

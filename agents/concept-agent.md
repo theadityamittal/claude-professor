@@ -141,7 +141,7 @@ These are incorrect invocations — wrong flags, missing arguments, or misspelle
 - **Action:** Correct the command and retry. There is no retry cap — each retry must use a corrected invocation with different arguments.
 - **Circuit breaker:** Not triggered. Usage errors are always fixable by adjusting the call.
 
-### Runtime Errors (exit code 1, output contains `{"error": "..."}` or a stack trace)
+### Runtime Errors (output contains `{"error": "..."}` or a stack trace)
 
 These are unexpected script-level failures.
 

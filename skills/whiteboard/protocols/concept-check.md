@@ -65,7 +65,7 @@ The concept-agent returns a status for each resolved concept. Handle each status
   node ${CLAUDE_PLUGIN_ROOT}/scripts/session.js add-concept \
     --session-dir docs/professor/ \
     --concept-id "{concept_id}" --domain "{domain}" \
-    --status "known" --grade null \
+    --status "known" \
     --phase "{current phase}" --context "{brief context}"
   ```
 

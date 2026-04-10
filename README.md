@@ -135,7 +135,7 @@ claude-professor/
 │   ├── graph.js                  # Architecture graph management
 │   ├── detect-changes.js         # Structural change detection hook
 │   ├── migrate-v3.js             # Phase 2 → Phase 3 migration
-│   └── test/                     # Automated tests (162 tests, node:test)
+│   └── test/                     # Automated tests (165 tests, node:test)
 ├── tests/
 │   ├── data/
 │   │   └── registry-v3.json      # v3 fixture registry for integration tests
@@ -279,7 +279,7 @@ User config at `~/.claude/professor/config.json`:
 node --test scripts/test/*.test.js
 ```
 
-162 tests covering FSRS math, lookup modes, update features, migration, utils, session state, graph management, scan command, and a full lifecycle simulation.
+165 tests covering FSRS math, lookup modes, update features, migration, utils, session state, graph management, scan command, and a full lifecycle simulation.
 
 ### Lifecycle Simulation
 

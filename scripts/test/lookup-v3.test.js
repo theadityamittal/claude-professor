@@ -301,25 +301,25 @@ describe('reconcile mode', () => {
 // ── regression: existing modes still work ───────────────────────────────────
 
 describe('existing modes regression', () => {
-  // Use old Phase 1 registry format (id field) for compatibility with existing search tests
-  const legacyRegistry = [
-    { id: 'caching_strategies', domain: 'databases', difficulty: 'intermediate' },
-    { id: 'redis', domain: 'databases', difficulty: 'intermediate' },
+  // Uses v3 format — v2 id field is no longer supported
+  const v3Registry = [
+    { concept_id: 'caching_strategies', domain: 'databases', difficulty_tier: 'intermediate' },
+    { concept_id: 'redis', domain: 'databases', difficulty_tier: 'intermediate' },
   ];
 
-  it('search mode still works', () => {
-    const legacyRegPath = path.join(tmpDir, 'legacy-registry.json');
-    fs.writeFileSync(legacyRegPath, JSON.stringify(legacyRegistry));
+  it('search mode works with v3 registry', () => {
+    const regPath = path.join(tmpDir, 'v3-registry.json');
+    fs.writeFileSync(regPath, JSON.stringify(v3Registry));
 
     const result = runLookup([
       'search',
       '--query', 'redis',
-      '--registry-path', legacyRegPath,
+      '--registry-path', regPath,
       '--domains-path', domainsPath,
     ]);
 
     assert.ok(Array.isArray(result.matched_concepts));
-    const ids = result.matched_concepts.map(c => c.id);
+    const ids = result.matched_concepts.map(c => c.concept_id);
     assert.ok(ids.includes('redis'));
   });
 

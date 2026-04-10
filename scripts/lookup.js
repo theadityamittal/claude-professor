@@ -96,9 +96,9 @@ function _buildConceptMap(registryPath, profileDir) {
   const registry = readJSON(registryPath) || [];
   const map = new Map();
 
-  // Load seed concepts (support both Phase 3 concept_id field and legacy id field)
+  // Load seed concepts (Phase 3 concept_id field only)
   for (const entry of registry) {
-    const conceptId = entry.concept_id || entry.id;
+    const conceptId = entry.concept_id;
     if (!conceptId) continue;
     map.set(conceptId, {
       concept_id: conceptId,

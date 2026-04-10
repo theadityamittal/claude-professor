@@ -8,19 +8,87 @@ const {
   getInitialStability, getInitialDifficulty,
 } = require('./fsrs.js');
 
-function update(options) {
-  const { concept, domain, grade, isRegistryConcept, difficultyTier,
-          profileDir, documentationUrl, notes } = options;
+function parseList(str) {
+  if (!str || str === '') return [];
+  return str.split(',').map(s => s.trim()).filter(Boolean);
+}
 
-  const gradeNum = parseInt(grade, 10);
-  if (![1, 2, 3, 4].includes(gradeNum)) {
-    throw new Error(`Invalid grade: ${grade}. Must be 1 (Again), 2 (Hard), 3 (Good), or 4 (Easy).`);
-  }
+function update(options) {
+  const {
+    concept, domain, grade,
+    isRegistryConcept, isSeedConcept, difficultyTier,
+    profileDir, documentationUrl, notes,
+    level, parentConcept, aliases, scopeNote, relatedConcepts,
+    createParent, addAlias, body,
+  } = options;
 
   ensureDir(profileDir);
   const conceptPath = path.join(profileDir, domain, `${concept}.md`);
   const existing = readMarkdownWithFrontmatter(conceptPath);
   const now = isoNow();
+
+  // --- --add-alias path ---
+  if (addAlias !== undefined) {
+    if (!existing) {
+      throw new Error(`Concept not found: ${concept} in domain ${domain}`);
+    }
+    const entry = existing.frontmatter;
+    const currentAliases = Array.isArray(entry.aliases) ? entry.aliases : [];
+    const updatedAliases = currentAliases.includes(addAlias)
+      ? currentAliases
+      : [...currentAliases, addAlias];
+
+    const updatedFrontmatter = { ...entry, aliases: updatedAliases };
+    writeMarkdownFile(conceptPath, updatedFrontmatter, existing.body);
+    return { success: true, concept_id: concept, domain, action: 'alias_added' };
+  }
+
+  // --- --body path ---
+  if (body !== undefined) {
+    if (!existing) {
+      throw new Error(`Concept not found: ${concept} in domain ${domain}`);
+    }
+    writeMarkdownFile(conceptPath, existing.frontmatter, body);
+    return { success: true, concept_id: concept, domain, action: 'body_updated' };
+  }
+
+  // --- --create-parent path (no grade needed) ---
+  if (createParent) {
+    const frontmatter = {
+      concept_id: concept,
+      domain,
+      level: level !== undefined ? parseInt(level, 10) : 1,
+      parent_concept: parentConcept || null,
+      is_seed_concept: isSeedConcept === true || isSeedConcept === 'true',
+      difficulty_tier: difficultyTier || 'intermediate',
+      aliases: aliases ? parseList(aliases) : [],
+      related_concepts: relatedConcepts ? parseList(relatedConcepts) : [],
+      scope_note: scopeNote || '',
+      first_encountered: now,
+      last_reviewed: null,
+      review_history: [],
+      fsrs_stability: 0,
+      fsrs_difficulty: 0,
+    };
+    const title = concept.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+    const bodyContent = `\n# ${title}\n\n## Notes\n${notes || 'No notes yet.'}\n`;
+    writeMarkdownFile(conceptPath, frontmatter, bodyContent);
+
+    return {
+      success: true,
+      concept_id: concept,
+      domain,
+      new_stability: 0,
+      new_difficulty: 0,
+      action: 'created',
+    };
+  }
+
+  // --- grade-based create / update path ---
+  const gradeNum = parseInt(grade, 10);
+  if (![1, 2, 3, 4].includes(gradeNum)) {
+    throw new Error(`Invalid grade: ${grade}. Must be 1 (Again), 2 (Hard), 3 (Good), or 4 (Easy).`);
+  }
 
   if (!existing) {
     const newStability = getInitialStability(gradeNum);
@@ -29,18 +97,24 @@ function update(options) {
     const frontmatter = {
       concept_id: concept,
       domain,
-      is_registry_concept: isRegistryConcept === 'true',
-      difficulty_tier: difficultyTier,
+      level: level !== undefined ? parseInt(level, 10) : 1,
+      parent_concept: parentConcept || null,
+      is_seed_concept: isSeedConcept === true || isSeedConcept === 'true',
+      difficulty_tier: difficultyTier || 'intermediate',
+      aliases: aliases ? parseList(aliases) : [],
+      related_concepts: relatedConcepts ? parseList(relatedConcepts) : [],
+      scope_note: scopeNote || '',
       first_encountered: now,
       last_reviewed: now,
       review_history: [{ date: now, grade: gradeNum }],
       fsrs_stability: newStability,
       fsrs_difficulty: Math.round(newDifficulty * 1000) / 1000,
+      // Keep documentation_url for backward compatibility with existing tests
       documentation_url: documentationUrl || null,
     };
     const title = concept.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
-    const body = `\n# ${title}\n\n## Notes\n${notes || 'No notes yet.'}\n`;
-    writeMarkdownFile(conceptPath, frontmatter, body);
+    const bodyContent = `\n# ${title}\n\n## Notes\n${notes || 'No notes yet.'}\n`;
+    writeMarkdownFile(conceptPath, frontmatter, bodyContent);
 
     return {
       success: true,
@@ -84,12 +158,27 @@ function update(options) {
 
 if (require.main === module) {
   const args = parseArgs(process.argv.slice(2));
-  const required = ['concept', 'domain', 'grade', 'profile-dir'];
-  const missing = required.filter(k => !args[k]);
-  if (missing.length > 0) {
-    process.stderr.write(`Missing required arguments: ${missing.join(', ')}\n`);
-    process.stderr.write('Usage: node update.js --concept ID --domain DOMAIN --grade 1-4 --profile-dir PATH\n');
-    process.exit(1);
+
+  const isCreateParent = args['create-parent'] === true;
+  const isAddAlias = args['add-alias'] !== undefined;
+  const isBodyUpdate = args['body'] !== undefined;
+
+  // Determine required args based on operation mode
+  if (!isCreateParent && !isAddAlias && !isBodyUpdate) {
+    const required = ['concept', 'domain', 'grade', 'profile-dir'];
+    const missing = required.filter(k => !args[k]);
+    if (missing.length > 0) {
+      process.stderr.write(`Missing required arguments: ${missing.join(', ')}\n`);
+      process.stderr.write('Usage: node update.js --concept ID --domain DOMAIN --grade 1-4 --profile-dir PATH\n');
+      process.exit(1);
+    }
+  } else {
+    const required = ['concept', 'domain', 'profile-dir'];
+    const missing = required.filter(k => !args[k]);
+    if (missing.length > 0) {
+      process.stderr.write(`Missing required arguments: ${missing.join(', ')}\n`);
+      process.exit(1);
+    }
   }
 
   try {
@@ -98,10 +187,19 @@ if (require.main === module) {
       domain: args.domain,
       grade: args.grade,
       isRegistryConcept: args['is-registry-concept'] || 'false',
+      isSeedConcept: args['is-seed-concept'] === true || args['is-seed-concept'] === 'true',
       difficultyTier: args['difficulty-tier'] || 'intermediate',
       profileDir: expandHome(args['profile-dir']),
       documentationUrl: args['documentation-url'],
       notes: args.notes,
+      level: args.level,
+      parentConcept: args['parent-concept'],
+      aliases: args.aliases,
+      scopeNote: args['scope-note'],
+      relatedConcepts: args['related-concepts'],
+      createParent: isCreateParent,
+      addAlias: args['add-alias'],
+      body: args.body,
     });
     process.stdout.write(JSON.stringify(result, null, 2) + '\n');
   } catch (err) {

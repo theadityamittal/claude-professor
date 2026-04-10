@@ -11,11 +11,11 @@ const scriptPath = path.resolve(__dirname, '..', 'lookup.js');
 const domainsPath = path.resolve(__dirname, '..', '..', 'data', 'domains.json');
 
 const testRegistry = [
-  { id: 'caching_strategies', domain: 'databases', difficulty: 'intermediate' },
-  { id: 'redis', domain: 'databases', difficulty: 'intermediate' },
-  { id: 'api_endpoint_design', domain: 'backend', difficulty: 'foundational' },
-  { id: 'connection_pooling', domain: 'databases', difficulty: 'intermediate' },
-  { id: 'gradient_descent', domain: 'ml_ai', difficulty: 'foundational' },
+  { concept_id: 'caching_strategies', domain: 'databases', difficulty_tier: 'intermediate' },
+  { concept_id: 'redis', domain: 'databases', difficulty_tier: 'intermediate' },
+  { concept_id: 'api_endpoint_design', domain: 'backend', difficulty_tier: 'foundational' },
+  { concept_id: 'connection_pooling', domain: 'databases', difficulty_tier: 'intermediate' },
+  { concept_id: 'gradient_descent', domain: 'ml_ai', difficulty_tier: 'foundational' },
 ];
 
 function runLookup(args) {
@@ -45,7 +45,7 @@ describe('lookup search mode', () => {
       '--registry-path', path.join(tmpDir, 'registry.json'),
       '--domains-path', domainsPath,
     ]);
-    const ids = result.matched_concepts.map(c => c.id);
+    const ids = result.matched_concepts.map(c => c.concept_id);
     assert.ok(ids.includes('redis'));
     assert.ok(ids.includes('caching_strategies'));
   });
@@ -68,6 +68,23 @@ describe('lookup search mode', () => {
       '--domains-path', domainsPath,
     ]);
     assert.equal(result.matched_concepts.length, 0);
+  });
+
+  it('returns compact format with only concept_id and domain', () => {
+    const result = runLookup([
+      'search',
+      '--query', 'caching',
+      '--registry-path', path.join(tmpDir, 'registry.json'),
+      '--domains-path', domainsPath,
+    ]);
+    assert.ok(result.matched_concepts.length > 0);
+    const concept = result.matched_concepts[0];
+    assert.ok('concept_id' in concept, 'concept_id must be present');
+    assert.ok('domain' in concept, 'domain must be present');
+    // Compact output must NOT include verbose fields
+    assert.ok(!('difficulty_tier' in concept), 'difficulty_tier must be absent');
+    assert.ok(!('aliases' in concept), 'aliases must be absent');
+    assert.ok(!('scope_note' in concept), 'scope_note must be absent');
   });
 });
 
@@ -113,7 +130,7 @@ describe('lookup status mode', () => {
     ]);
     assert.equal(result.concepts.length, 1);
     assert.ok(result.concepts[0].retrievability !== null);
-    assert.ok(typeof result.concepts[0].stability === 'number');
+    assert.ok(typeof result.concepts[0].retrievability === 'number');
   });
 
   it('creates profile directory if missing', () => {
@@ -127,5 +144,49 @@ describe('lookup status mode', () => {
     ]);
     assert.ok(fs.existsSync(newProfileDir));
     assert.equal(result.concepts[0].status, 'new');
+  });
+
+  it('resolves domain from registry for concepts not in profile', () => {
+    // connection_pooling is in testRegistry with domain 'databases'
+    // but has no profile file — domain must come from registry
+    const result = runLookup([
+      'status',
+      '--concepts', 'connection_pooling',
+      '--profile-dir', profileDir,
+      '--domains-path', domainsPath,
+      '--registry-path', path.join(tmpDir, 'registry.json'),
+    ]);
+    assert.equal(result.concepts[0].domain, 'databases');
+  });
+
+  it('returns compact format for status output', () => {
+    const result = runLookup([
+      'status',
+      '--concepts', 'redis',
+      '--profile-dir', profileDir,
+      '--domains-path', domainsPath,
+      '--registry-path', path.join(tmpDir, 'registry.json'),
+    ]);
+    const concept = result.concepts[0];
+    assert.ok('concept_id' in concept);
+    assert.ok('status' in concept);
+    assert.ok('retrievability' in concept);
+    // Must NOT include verbose fields
+    assert.ok(!('stability' in concept), 'stability must be absent');
+    assert.ok(!('difficulty' in concept), 'difficulty must be absent');
+    assert.ok(!('grade_history' in concept), 'grade_history must be absent');
+    assert.ok(!('days_since_review' in concept), 'days_since_review must be absent');
+  });
+
+  it('returns domain null for concepts not in registry', () => {
+    const result = runLookup([
+      'status',
+      '--concepts', 'totally_unknown_xyz',
+      '--profile-dir', profileDir,
+      '--domains-path', domainsPath,
+      '--registry-path', path.join(tmpDir, 'registry.json'),
+    ]);
+    assert.strictEqual(result.concepts[0].domain, null);
+    assert.strictEqual(result.concepts[0].status, 'new');
   });
 });

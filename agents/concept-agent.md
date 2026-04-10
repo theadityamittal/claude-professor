@@ -130,6 +130,41 @@ Use the `determineAction(R)` result from the script output:
 - `review` → status is `review`
 - `skip` → status is `skip`
 
+## Self-Healing Retry Protocol
+
+Apply this protocol whenever any `node ... lookup.js` or `node ... update.js` script call fails.
+
+### Usage Errors (exit code 1, output contains "Missing required arguments" or "Unknown mode")
+
+These are incorrect invocations — wrong flags, missing arguments, or misspelled mode names.
+
+- **Action:** Correct the command and retry. There is no retry cap — each retry must use a corrected invocation with different arguments.
+- **Circuit breaker:** Not triggered. Usage errors are always fixable by adjusting the call.
+
+### Runtime Errors (output contains `{"error": "..."}` or a stack trace)
+
+These are unexpected script-level failures.
+
+1. **On first failure:** Read the script source file to understand the error context:
+   ```bash
+   cat ${CLAUDE_PLUGIN_ROOT}/scripts/lookup.js
+   ```
+2. **Classify the error:**
+   - **Systemic** — the script code is broken for any input (e.g., `TypeError: Cannot read properties of undefined` on a field all registry entries should have)
+   - **Input-specific** — this particular input caused the failure, other inputs likely work (e.g., a concept ID with special characters, a domain that doesn't exist)
+3. **If systemic:** Set circuit to `OPEN`. Skip ALL remaining script calls of this type. For each skipped concept, include in its output entry:
+   ```json
+   { "candidate": "...", "error": "Script systemic failure: <error message>", "circuit": "OPEN" }
+   ```
+4. **If input-specific:** Set circuit to `HALF-OPEN`. Try the next input normally. If the next call succeeds → circuit `CLOSED`, continue normally. If the next call fails with the same error → reclassify as systemic → `OPEN`.
+5. **If ambiguous** (cannot determine class): Default to `HALF-OPEN`. The cost of one probe is lower than wrongly blocking valid calls.
+
+**Runtime retry cap:** 2 retries maximum before classifying as systemic.
+
+### Error Propagation
+
+Errors in one concept must never block resolution of other candidates. Always include the full raw error message in the `"error"` field of the affected concept entry and continue processing remaining candidates.
+
 ## Output Format
 
 Output ONLY valid JSON in this exact format — no prose, no markdown fences, no explanation. (The fences below are for prompt readability only — your output must be raw JSON.)

@@ -150,3 +150,114 @@ describe('graph.js detect-changes', () => {
     assert.equal(result.structural_changes_detected, false);
   });
 });
+
+describe('graph.js scan', () => {
+  it('returns compact manifest with correct fields', () => {
+    fs.writeFileSync(path.join(tmpDir, 'package.json'), '{"name":"test"}');
+    fs.writeFileSync(path.join(tmpDir, 'index.js'), 'module.exports = {}');
+
+    const result = runGraph(['scan', '--dir', tmpDir, '--budget', '100']);
+
+    assert.ok(Array.isArray(result.files));
+    assert.equal(result.scan_budget, 100);
+    assert.equal(typeof result.truncated, 'boolean');
+    assert.ok(typeof result.total_files === 'number');
+
+    const pkg = result.files.find(f => f.path === 'package.json');
+    assert.ok(pkg, 'package.json must be in manifest');
+    assert.equal(pkg.type, 'manifest');
+    assert.equal(pkg.language, 'other');
+    assert.ok(typeof pkg.size === 'number');
+
+    const idx = result.files.find(f => f.path === 'index.js');
+    assert.ok(idx, 'index.js must be in manifest');
+    assert.equal(idx.type, 'source');
+    assert.equal(idx.language, 'js');
+  });
+
+  it('respects budget — truncates and sets truncated=true', () => {
+    for (let i = 0; i < 10; i++) {
+      fs.writeFileSync(path.join(tmpDir, `file${i}.js`), '');
+    }
+    const result = runGraph(['scan', '--dir', tmpDir, '--budget', '3']);
+
+    assert.ok(result.files.length <= 3);
+    assert.equal(result.truncated, true);
+    assert.strictEqual(result.total_files, 10, 'total_files must report actual count, not truncated');
+  });
+
+  it('does not truncate when under budget', () => {
+    fs.writeFileSync(path.join(tmpDir, 'index.js'), '');
+    const result = runGraph(['scan', '--dir', tmpDir, '--budget', '100']);
+    assert.equal(result.truncated, false);
+  });
+
+  it('excludes node_modules, .git, dist, build directories', () => {
+    for (const dir of ['node_modules', '.git', 'dist', 'build']) {
+      fs.mkdirSync(path.join(tmpDir, dir), { recursive: true });
+      fs.writeFileSync(path.join(tmpDir, dir, 'file.js'), '');
+    }
+    fs.writeFileSync(path.join(tmpDir, 'index.js'), '');
+
+    const result = runGraph(['scan', '--dir', tmpDir, '--budget', '100']);
+    const paths = result.files.map(f => f.path);
+
+    assert.ok(!paths.some(p => p.includes('node_modules')));
+    assert.ok(!paths.some(p => p.includes('.git')));
+    assert.ok(!paths.some(p => p.includes('dist/')));
+    assert.ok(!paths.some(p => p.includes('build/')));
+    assert.ok(paths.includes('index.js'));
+  });
+
+  it('prioritizes manifests over source files when budget is tight', () => {
+    for (let i = 0; i < 8; i++) {
+      fs.writeFileSync(path.join(tmpDir, `file${i}.js`), '');
+    }
+    fs.writeFileSync(path.join(tmpDir, 'package.json'), '{}');
+
+    const result = runGraph(['scan', '--dir', tmpDir, '--budget', '3']);
+
+    const pkg = result.files.find(f => f.path === 'package.json');
+    assert.ok(pkg, 'package.json must be included even with tight budget');
+  });
+
+  it('includes directory summary derived from included files', () => {
+    const src = path.join(tmpDir, 'src');
+    fs.mkdirSync(src, { recursive: true });
+    fs.writeFileSync(path.join(src, 'index.js'), '');
+    fs.writeFileSync(path.join(src, 'utils.js'), '');
+
+    const result = runGraph(['scan', '--dir', tmpDir, '--budget', '100']);
+
+    const srcDir = result.directories.find(d => d.path === 'src');
+    assert.ok(srcDir, 'src directory must be in directories list');
+    assert.equal(srcDir.file_count, 2);
+  });
+
+  it('defaults budget to 100 if not provided', () => {
+    fs.writeFileSync(path.join(tmpDir, 'index.js'), '');
+    const result = runGraph(['scan', '--dir', tmpDir]);
+    assert.equal(result.scan_budget, 100);
+  });
+
+  it('sorts files deterministically by path within same type', () => {
+    fs.writeFileSync(path.join(tmpDir, 'zebra.js'), '');
+    fs.writeFileSync(path.join(tmpDir, 'alpha.js'), '');
+    fs.writeFileSync(path.join(tmpDir, 'middle.js'), '');
+    const result = runGraph(['scan', '--dir', tmpDir, '--budget', '100']);
+    const paths = result.files.filter(f => f.type === 'source').map(f => f.path);
+    assert.deepStrictEqual(paths, [...paths].sort());
+  });
+
+  it('rejects non-numeric budget', () => {
+    assert.throws(() => {
+      runGraph(['scan', '--dir', tmpDir, '--budget', 'abc']);
+    });
+  });
+
+  it('fails without --dir argument', () => {
+    assert.throws(() => {
+      runGraph(['scan', '--budget', '10']);
+    });
+  });
+});

@@ -1,0 +1,29 @@
+[
+  {
+    "concept_id": "pipe_filter",
+    "domain": "architecture",
+    "difficulty_tier": "intermediate",
+    "level": 1,
+    "aliases": ["pipeline pattern", "filter chain"],
+    "scope_note": "Decompose processing into sequential stages connected by data streams.",
+    "is_seed_concept": true
+  },
+  {
+    "concept_id": "circuit_breaker",
+    "domain": "architecture",
+    "difficulty_tier": "intermediate",
+    "level": 1,
+    "aliases": ["circuit breaker pattern"],
+    "scope_note": "Prevent cascading failures by short-circuiting calls to failing services.",
+    "is_seed_concept": true
+  },
+  {
+    "concept_id": "input_validation",
+    "domain": "backend",
+    "difficulty_tier": "foundational",
+    "level": 1,
+    "aliases": ["data validation", "schema validation"],
+    "scope_note": "Verify that input data meets expected format and constraints before processing.",
+    "is_seed_concept": true
+  }
+]

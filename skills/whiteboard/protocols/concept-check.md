@@ -13,8 +13,9 @@ Check concepts that are **central to a design decision** — not every technical
 
 Do NOT check concepts that are:
 - Mentioned only in passing or as background context
-- Already in the session's `concepts_checked` list
-- Simple vocabulary the developer clearly understands from context
+- Already in the session's `concepts_checked` list (already resolved this session)
+
+**Never skip concept-agent based on assumed developer expertise.** Always resolve through concept-agent. The `skip` status is how the system records that a developer knows a concept — not a reason to bypass the check.
 
 ## Identifying Concept Candidates
 
@@ -59,7 +60,14 @@ The concept-agent returns a status for each resolved concept. Handle each status
 ### `skip` (R > 0.7 — developer knows this well)
 - Use the concept freely in discussion without explanation
 - Do not spawn professor-teach
-- Do not add to session (it was already resolved, no action needed)
+- Record the concept in the session:
+  ```bash
+  node ${CLAUDE_PLUGIN_ROOT}/scripts/session.js add-concept \
+    --session-dir docs/professor/ \
+    --concept-id "{concept_id}" --domain "{domain}" \
+    --status "known" \
+    --phase "{current phase}" --context "{brief context}"
+  ```
 
 ### `review` (0.3 <= R <= 0.7 — knowledge is decaying)
 - Spawn professor-teach with status `review`

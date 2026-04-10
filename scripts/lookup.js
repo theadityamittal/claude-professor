@@ -13,7 +13,7 @@ function search(registryPath, domainsPath, query) {
 
   const matchedConcepts = registry.filter(concept =>
     words.some(word =>
-      concept.id.toLowerCase().includes(word) ||
+      concept.concept_id.toLowerCase().includes(word) ||
       concept.domain.toLowerCase().includes(word)
     )
   );
@@ -23,7 +23,11 @@ function search(registryPath, domainsPath, query) {
     ...allDomainIds.filter(d => words.some(w => d.includes(w))),
   ])];
 
-  return { matched_concepts: matchedConcepts, matched_domains: matchedDomains, all_domains: allDomainIds };
+  return {
+    matched_concepts: matchedConcepts.map(c => ({ concept_id: c.concept_id, domain: c.domain })),
+    matched_domains: matchedDomains,
+    all_domains: allDomainIds,
+  };
 }
 
 function status(conceptIds, profileDir, domainsPath, registryPath) {
@@ -32,7 +36,7 @@ function status(conceptIds, profileDir, domainsPath, registryPath) {
   const now = isoNow();
 
   const concepts = conceptIds.map(conceptId => {
-    const registryEntry = registry.find(c => c.id === conceptId);
+    const registryEntry = registry.find(c => c.concept_id === conceptId);
     let domain = registryEntry ? registryEntry.domain : null;
 
     if (!domain) {
@@ -47,24 +51,14 @@ function status(conceptIds, profileDir, domainsPath, registryPath) {
     }
 
     if (!domain) {
-      return {
-        concept_id: conceptId, domain: null, status: 'new',
-        retrievability: null, stability: null, difficulty: null,
-        grade_history: [], last_reviewed: null, days_since_review: null,
-        documentation_url: null,
-      };
+      return { concept_id: conceptId, domain: null, status: 'new', retrievability: null };
     }
 
     const conceptPath = path.join(profileDir, domain, `${conceptId}.md`);
     const result = readMarkdownWithFrontmatter(conceptPath);
 
     if (!result) {
-      return {
-        concept_id: conceptId, domain, status: 'new',
-        retrievability: null, stability: null, difficulty: null,
-        grade_history: [], last_reviewed: null, days_since_review: null,
-        documentation_url: null,
-      };
+      return { concept_id: conceptId, domain, status: 'new', retrievability: null };
     }
 
     const entry = result.frontmatter;
@@ -73,14 +67,10 @@ function status(conceptIds, profileDir, domainsPath, registryPath) {
     const action = determineAction(retrievability);
 
     return {
-      concept_id: conceptId, domain, status: action,
+      concept_id: conceptId,
+      domain,
+      status: action,
       retrievability: Math.round(retrievability * 1000) / 1000,
-      stability: entry.fsrs_stability,
-      difficulty: entry.fsrs_difficulty,
-      grade_history: (entry.review_history || []).map(r => r.grade),
-      last_reviewed: entry.last_reviewed,
-      days_since_review: Math.round(elapsed * 10) / 10,
-      documentation_url: entry.documentation_url || null,
     };
   });
 
@@ -96,9 +86,9 @@ function _buildConceptMap(registryPath, profileDir) {
   const registry = readJSON(registryPath) || [];
   const map = new Map();
 
-  // Load seed concepts (support both Phase 3 concept_id field and legacy id field)
+  // Load seed concepts (Phase 3 concept_id field only)
   for (const entry of registry) {
-    const conceptId = entry.concept_id || entry.id;
+    const conceptId = entry.concept_id;
     if (!conceptId) continue;
     map.set(conceptId, {
       concept_id: conceptId,

@@ -69,6 +69,23 @@ describe('lookup search mode', () => {
     ]);
     assert.equal(result.matched_concepts.length, 0);
   });
+
+  it('returns compact format with only concept_id and domain', () => {
+    const result = runLookup([
+      'search',
+      '--query', 'caching',
+      '--registry-path', path.join(tmpDir, 'registry.json'),
+      '--domains-path', domainsPath,
+    ]);
+    assert.ok(result.matched_concepts.length > 0);
+    const concept = result.matched_concepts[0];
+    assert.ok('concept_id' in concept, 'concept_id must be present');
+    assert.ok('domain' in concept, 'domain must be present');
+    // Compact output must NOT include verbose fields
+    assert.ok(!('difficulty_tier' in concept), 'difficulty_tier must be absent');
+    assert.ok(!('aliases' in concept), 'aliases must be absent');
+    assert.ok(!('scope_note' in concept), 'scope_note must be absent');
+  });
 });
 
 describe('lookup status mode', () => {

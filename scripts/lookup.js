@@ -23,7 +23,11 @@ function search(registryPath, domainsPath, query) {
     ...allDomainIds.filter(d => words.some(w => d.includes(w))),
   ])];
 
-  return { matched_concepts: matchedConcepts, matched_domains: matchedDomains, all_domains: allDomainIds };
+  return {
+    matched_concepts: matchedConcepts.map(c => ({ concept_id: c.concept_id, domain: c.domain })),
+    matched_domains: matchedDomains,
+    all_domains: allDomainIds,
+  };
 }
 
 function status(conceptIds, profileDir, domainsPath, registryPath) {

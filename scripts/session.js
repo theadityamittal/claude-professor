@@ -88,9 +88,9 @@ function clear(sessionDir) {
   return { success: true };
 }
 
-function gate(sessionDir, require) {
-  if (require !== 'concepts') {
-    process.stderr.write(`Unknown --require value: "${require}". Supported: concepts\n`);
+function gate(sessionDir, requireType) {
+  if (requireType !== 'concepts') {
+    process.stderr.write(`Unknown --require value: "${requireType}". Supported: concepts\n`);
     process.exit(1);
   }
 
@@ -102,6 +102,14 @@ function gate(sessionDir, require) {
       warning: 'no active session found',
     }, null, 2) + '\n');
     return;
+  }
+
+  if (!Array.isArray(state.concepts_checked)) {
+    process.stderr.write(JSON.stringify({
+      error: 'Malformed session state: concepts_checked is missing or not an array',
+      path: getSessionPath(sessionDir),
+    }, null, 2) + '\n');
+    process.exit(1);
   }
 
   if (state.concepts_checked.length === 0) {
@@ -165,10 +173,11 @@ if (require.main === module) {
         break;
       case 'gate':
         validateArgs(['session-dir', 'require'], 'gate --session-dir PATH --require concepts');
+        // gate handles its own stdout/exit; skip shared output
         gate(args['session-dir'], args.require);
         return;
       default:
-        process.stderr.write(`Unknown mode: ${mode}. Use create, load, update, add-concept, or clear.\n`);
+        process.stderr.write(`Unknown mode: ${mode}. Use create, load, update, add-concept, clear, or gate.\n`);
         process.exit(1);
     }
     process.stdout.write(JSON.stringify(result, null, 2) + '\n');

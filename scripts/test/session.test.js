@@ -154,6 +154,8 @@ describe('session.js', () => {
       ]);
       assert.equal(result.status, 0);
       assert.equal(result.stdout.gate, 'open');
+      assert.equal(result.stdout.warning, undefined);
+      assert.equal(result.stdout.reason, undefined);
     });
 
     it('blocks when concepts_checked is empty', () => {
@@ -185,6 +187,7 @@ describe('session.js', () => {
         'gate', '--require', 'unknown_value', '--session-dir', sessionDir,
       ]);
       assert.equal(result.status, 1);
+      assert.ok(result.stderr.includes('Unknown --require value'));
     });
   });
 });

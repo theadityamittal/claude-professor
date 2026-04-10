@@ -1,22 +1,46 @@
 {
-  "relevant_domains": ["architecture", "software_construction", "testing"],
-  "tech_stack": ["Node.js", "JavaScript", "Claude Code Plugin System"],
+  "relevant_domains": [
+    "architecture",
+    "software_construction",
+    "testing",
+    "api_design",
+    "algorithms_data_structures",
+    "devops_infrastructure",
+    "security"
+  ],
+  "tech_stack": [
+    "Node.js",
+    "JavaScript",
+    "JSON",
+    "Markdown",
+    "Git"
+  ],
   "detected_patterns": [
-    "modular_monolith",
-    "domain_driven_design",
-    "repository_pattern",
-    "dependency_injection",
     "design_patterns",
-    "coupling_cohesion",
+    "domain_driven_design",
+    "graphs",
+    "configuration_management",
     "unit_testing",
+    "integration_testing",
     "test_driven_development",
-    "build_systems",
+    "session_management",
+    "memory_management",
+    "data_catalog",
+    "relational_model",
+    "schema_migration",
+    "schema_evolution",
+    "data_serialization",
+    "reinforcement_learning",
+    "model_evaluation",
+    "supervised_learning",
+    "full_text_search",
+    "searching_algorithms",
     "dependency_management",
-    "defensive_programming",
-    "static_analysis",
-    "version_control",
-    "documentation"
+    "complexity_management",
+    "prompt_engineering",
+    "artifact_management",
+    "incident_management"
   ],
   "generated_from": "analyze-architecture",
-  "last_updated": "2026-04-10T06:30:00Z"
+  "last_updated": "2026-04-10T00:00:00Z"
 }

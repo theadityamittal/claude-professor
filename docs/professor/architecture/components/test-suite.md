@@ -1,33 +1,20 @@
 # Test Suite
 
 ## Description
-Comprehensive test coverage for all scripts: FSRS calculations, lookup operations, graph generation, session management, update flows, and v2/v3 migrations.
+Comprehensive unit test coverage for all core modules including FSRS, graph, and migrations
 
 ## Concepts Involved
-- `debugging`
-- `code_review`
+- `testing`
+- `design_patterns`
+- `regression`
 
 ## Depends On
-- [[fsrs-engine]]
-- [[concept-registry]]
-- [[architecture-analyzer]]
-- [[session-manager]]
-- [[profile-manager]]
+- [[architecture-graph]]
+- [[concept-lookup]]
+- [[fsrs-scheduler]]
+- [[concept-updater]]
+- [[session-state]]
+- [[data-migration]]
 
 ## Key Files
-- scripts/test/fsrs.test.js
-- scripts/test/lookup.test.js
-- scripts/test/lookup-v3.test.js
-- scripts/test/graph.test.js
-- scripts/test/session.test.js
-- scripts/test/update.test.js
-- scripts/test/update-v3.test.js
-- scripts/test/migrate-v2.test.js
-- scripts/test/migrate-v3.test.js
-- scripts/test/utils.test.js
-- scripts/test/lifecycle.test.js
-
-## Patterns
-- unit testing
-- assertion-based
-- lifecycle tests
+- scripts/test/

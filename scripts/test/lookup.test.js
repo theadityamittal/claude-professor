@@ -11,11 +11,11 @@ const scriptPath = path.resolve(__dirname, '..', 'lookup.js');
 const domainsPath = path.resolve(__dirname, '..', '..', 'data', 'domains.json');
 
 const testRegistry = [
-  { id: 'caching_strategies', domain: 'databases', difficulty: 'intermediate' },
-  { id: 'redis', domain: 'databases', difficulty: 'intermediate' },
-  { id: 'api_endpoint_design', domain: 'backend', difficulty: 'foundational' },
-  { id: 'connection_pooling', domain: 'databases', difficulty: 'intermediate' },
-  { id: 'gradient_descent', domain: 'ml_ai', difficulty: 'foundational' },
+  { concept_id: 'caching_strategies', domain: 'databases', difficulty_tier: 'intermediate' },
+  { concept_id: 'redis', domain: 'databases', difficulty_tier: 'intermediate' },
+  { concept_id: 'api_endpoint_design', domain: 'backend', difficulty_tier: 'foundational' },
+  { concept_id: 'connection_pooling', domain: 'databases', difficulty_tier: 'intermediate' },
+  { concept_id: 'gradient_descent', domain: 'ml_ai', difficulty_tier: 'foundational' },
 ];
 
 function runLookup(args) {
@@ -45,7 +45,7 @@ describe('lookup search mode', () => {
       '--registry-path', path.join(tmpDir, 'registry.json'),
       '--domains-path', domainsPath,
     ]);
-    const ids = result.matched_concepts.map(c => c.id);
+    const ids = result.matched_concepts.map(c => c.concept_id);
     assert.ok(ids.includes('redis'));
     assert.ok(ids.includes('caching_strategies'));
   });

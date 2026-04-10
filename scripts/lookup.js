@@ -13,7 +13,7 @@ function search(registryPath, domainsPath, query) {
 
   const matchedConcepts = registry.filter(concept =>
     words.some(word =>
-      concept.id.toLowerCase().includes(word) ||
+      concept.concept_id.toLowerCase().includes(word) ||
       concept.domain.toLowerCase().includes(word)
     )
   );

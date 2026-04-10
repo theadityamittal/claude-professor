@@ -187,6 +187,87 @@ describe('writeMarkdownFile', () => {
     assert.equal(result.frontmatter.score, 2);
     assert.ok(result.body.includes('Do not lose this.'));
   });
+
+  it('handles Phase 3 concept fields - full L2 concept with all fields', () => {
+    const filePath = path.join(tmpDir, 'phase3-l2.md');
+    const frontmatter = {
+      concept_id: 'algo_sorting',
+      domain: 'algorithms',
+      level: 2,
+      parent_concept: 'search-sort',
+      is_seed_concept: false,
+      difficulty_tier: 'medium',
+      aliases: ['sorting algorithms', 'array sorting'],
+      related_concepts: ['bubble_sort', 'merge_sort', 'quick_sort'],
+      scope_note: 'Fundamental algorithms for arranging data in order',
+      first_encountered: '2026-03-15T10:00:00Z',
+      last_reviewed: '2026-04-05T14:30:00Z',
+      review_history: [
+        { date: '2026-03-15T10:00:00Z', grade: 3, context: 'initial' },
+        { date: '2026-04-05T14:30:00Z', grade: 4, context: 'review' },
+      ],
+      fsrs_stability: 15.5,
+      fsrs_difficulty: 6.2,
+    };
+    writeMarkdownFile(filePath, frontmatter, '# Sorting Algorithms\n\nA comprehensive guide to sorting.');
+    const result = readMarkdownWithFrontmatter(filePath);
+
+    // Verify all fields roundtrip correctly
+    assert.equal(result.frontmatter.concept_id, 'algo_sorting');
+    assert.equal(result.frontmatter.domain, 'algorithms');
+    assert.equal(result.frontmatter.level, 2);
+    assert.equal(result.frontmatter.parent_concept, 'search-sort');
+    assert.equal(result.frontmatter.is_seed_concept, false);
+    assert.equal(result.frontmatter.difficulty_tier, 'medium');
+    assert.deepEqual(result.frontmatter.aliases, ['sorting algorithms', 'array sorting']);
+    assert.deepEqual(result.frontmatter.related_concepts, ['bubble_sort', 'merge_sort', 'quick_sort']);
+    assert.equal(result.frontmatter.scope_note, 'Fundamental algorithms for arranging data in order');
+    assert.equal(result.frontmatter.first_encountered, '2026-03-15T10:00:00Z');
+    assert.equal(result.frontmatter.last_reviewed, '2026-04-05T14:30:00Z');
+    assert.equal(result.frontmatter.review_history.length, 2);
+    assert.equal(result.frontmatter.review_history[0].grade, 3);
+    assert.equal(result.frontmatter.review_history[0].context, 'initial');
+    assert.equal(result.frontmatter.review_history[1].grade, 4);
+    assert.equal(result.frontmatter.review_history[1].context, 'review');
+    assert.equal(result.frontmatter.fsrs_stability, 15.5);
+    assert.equal(result.frontmatter.fsrs_difficulty, 6.2);
+    assert.ok(result.body.includes('# Sorting Algorithms'));
+  });
+
+  it('handles Phase 3 concept fields - minimal L1 parent concept', () => {
+    const filePath = path.join(tmpDir, 'phase3-l1.md');
+    const frontmatter = {
+      concept_id: 'search-sort',
+      domain: 'algorithms',
+      level: 1,
+      parent_concept: null,
+      is_seed_concept: true,
+      aliases: [],
+      related_concepts: [],
+      scope_note: '',
+      review_history: [],
+      fsrs_stability: 0,
+      fsrs_difficulty: 0,
+      last_reviewed: null,
+    };
+    writeMarkdownFile(filePath, frontmatter, '# Search and Sorting\n\nParent concept for search and sorting algorithms.');
+    const result = readMarkdownWithFrontmatter(filePath);
+
+    // Verify all fields including null and empty arrays
+    assert.equal(result.frontmatter.concept_id, 'search-sort');
+    assert.equal(result.frontmatter.domain, 'algorithms');
+    assert.equal(result.frontmatter.level, 1);
+    assert.equal(result.frontmatter.parent_concept, null);
+    assert.equal(result.frontmatter.is_seed_concept, true);
+    assert.deepEqual(result.frontmatter.aliases, []);
+    assert.deepEqual(result.frontmatter.related_concepts, []);
+    assert.equal(result.frontmatter.scope_note, '');
+    assert.deepEqual(result.frontmatter.review_history, []);
+    assert.equal(result.frontmatter.fsrs_stability, 0);
+    assert.equal(result.frontmatter.fsrs_difficulty, 0);
+    assert.equal(result.frontmatter.last_reviewed, null);
+    assert.ok(result.body.includes('# Search and Sorting'));
+  });
 });
 
 describe('listMarkdownFiles', () => {

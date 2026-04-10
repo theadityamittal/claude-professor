@@ -130,7 +130,7 @@ describe('lookup status mode', () => {
     ]);
     assert.equal(result.concepts.length, 1);
     assert.ok(result.concepts[0].retrievability !== null);
-    assert.ok(typeof result.concepts[0].stability === 'number');
+    assert.ok(typeof result.concepts[0].retrievability === 'number');
   });
 
   it('creates profile directory if missing', () => {
@@ -157,5 +157,24 @@ describe('lookup status mode', () => {
       '--registry-path', path.join(tmpDir, 'registry.json'),
     ]);
     assert.equal(result.concepts[0].domain, 'databases');
+  });
+
+  it('returns compact format for status output', () => {
+    const result = runLookup([
+      'status',
+      '--concepts', 'redis',
+      '--profile-dir', profileDir,
+      '--domains-path', domainsPath,
+      '--registry-path', path.join(tmpDir, 'registry.json'),
+    ]);
+    const concept = result.concepts[0];
+    assert.ok('concept_id' in concept);
+    assert.ok('status' in concept);
+    assert.ok('retrievability' in concept);
+    // Must NOT include verbose fields
+    assert.ok(!('stability' in concept), 'stability must be absent');
+    assert.ok(!('difficulty' in concept), 'difficulty must be absent');
+    assert.ok(!('grade_history' in concept), 'grade_history must be absent');
+    assert.ok(!('days_since_review' in concept), 'days_since_review must be absent');
   });
 });

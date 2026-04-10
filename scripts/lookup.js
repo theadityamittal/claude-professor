@@ -51,24 +51,14 @@ function status(conceptIds, profileDir, domainsPath, registryPath) {
     }
 
     if (!domain) {
-      return {
-        concept_id: conceptId, domain: null, status: 'new',
-        retrievability: null, stability: null, difficulty: null,
-        grade_history: [], last_reviewed: null, days_since_review: null,
-        documentation_url: null,
-      };
+      return { concept_id: conceptId, domain: null, status: 'new', retrievability: null };
     }
 
     const conceptPath = path.join(profileDir, domain, `${conceptId}.md`);
     const result = readMarkdownWithFrontmatter(conceptPath);
 
     if (!result) {
-      return {
-        concept_id: conceptId, domain, status: 'new',
-        retrievability: null, stability: null, difficulty: null,
-        grade_history: [], last_reviewed: null, days_since_review: null,
-        documentation_url: null,
-      };
+      return { concept_id: conceptId, domain, status: 'new', retrievability: null };
     }
 
     const entry = result.frontmatter;
@@ -77,14 +67,10 @@ function status(conceptIds, profileDir, domainsPath, registryPath) {
     const action = determineAction(retrievability);
 
     return {
-      concept_id: conceptId, domain, status: action,
+      concept_id: conceptId,
+      domain,
+      status: action,
       retrievability: Math.round(retrievability * 1000) / 1000,
-      stability: entry.fsrs_stability,
-      difficulty: entry.fsrs_difficulty,
-      grade_history: (entry.review_history || []).map(r => r.grade),
-      last_reviewed: entry.last_reviewed,
-      days_since_review: Math.round(elapsed * 10) / 10,
-      documentation_url: entry.documentation_url || null,
     };
   });
 

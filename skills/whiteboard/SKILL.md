@@ -351,7 +351,7 @@ Present the design document path and a brief summary of what was covered.
 
 Use the session script for all state management:
 - Path: `${CLAUDE_PLUGIN_ROOT}/scripts/session.js`
-- Operations: `create`, `load`, `update`, `add-concept`, `clear`
+- Operations: `create`, `load`, `update`, `add-concept`, `clear`, `gate`
 - Session file: `docs/professor/.session-state.json`
 
 Session state tracks:

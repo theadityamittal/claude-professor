@@ -114,9 +114,9 @@ If mode is `resolve-only` and no match was found: record the candidate in `ambig
 
 For each successfully resolved concept, compute its FSRS status:
 
-1. **Check if a user profile file exists** at `~/.claude/professor/concepts/{domain}/{concept_id}.md` — use the domain resolved in the previous step.
+1. **Validate domain** — if the resolved domain is not in the 18-domain taxonomy, record in `ambiguous` with `reason: "invalid_domain"`. Do not proceed with status computation.
 
-2. **Domain not in the 18-domain taxonomy** → record in `ambiguous` with `reason: "invalid_domain"`. Do not proceed with status computation.
+2. **Check if a user profile file exists** at `~/.claude/professor/concepts/{domain}/{concept_id}.md` — use the domain resolved in the previous step.
 
 3. **File missing** (domain directory exists but no concept file, OR domain directory does not exist) → status is `new`. Domain directories are created lazily on write — a missing directory is not an error, it means nothing has been written to this domain yet.
 
@@ -191,7 +191,7 @@ Output ONLY valid JSON in this exact format — no prose, no markdown fences, no
   "ambiguous": [
     {
       "candidate": "original candidate name or id",
-      "reason": "no_match_resolve_only|multiple_possible_matches",
+      "reason": "no_match_resolve_only|multiple_possible_matches|invalid_domain",
       "possible_matches": ["concept_id_1", "concept_id_2"]
     }
   ],

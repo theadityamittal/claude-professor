@@ -177,4 +177,16 @@ describe('lookup status mode', () => {
     assert.ok(!('grade_history' in concept), 'grade_history must be absent');
     assert.ok(!('days_since_review' in concept), 'days_since_review must be absent');
   });
+
+  it('returns domain null for concepts not in registry', () => {
+    const result = runLookup([
+      'status',
+      '--concepts', 'totally_unknown_xyz',
+      '--profile-dir', profileDir,
+      '--domains-path', domainsPath,
+      '--registry-path', path.join(tmpDir, 'registry.json'),
+    ]);
+    assert.strictEqual(result.concepts[0].domain, null);
+    assert.strictEqual(result.concepts[0].status, 'new');
+  });
 });

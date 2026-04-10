@@ -110,7 +110,7 @@ Produces a multi-file architecture graph in `docs/professor/architecture/`. Run 
 ```
 claude-professor/
 ├── .claude-plugin/
-│   ├── plugin.json               # Plugin manifest (v3.0.0)
+│   ├── plugin.json               # Plugin manifest (v3.1.0)
 │   └── marketplace.json          # Marketplace registry
 ├── skills/
 │   ├── whiteboard/               # Primary design conversation skill
@@ -135,10 +135,13 @@ claude-professor/
 │   ├── graph.js                  # Architecture graph management
 │   ├── detect-changes.js         # Structural change detection hook
 │   ├── migrate-v3.js             # Phase 2 → Phase 3 migration
-│   └── test/                     # Automated tests (151 tests, node:test)
+│   └── test/                     # Automated tests (162 tests, node:test)
 ├── tests/
+│   ├── data/
+│   │   └── registry-v3.json      # v3 fixture registry for integration tests
 │   └── cli/
-│       └── test-whiteboard.sh    # CLI integration test
+│       ├── test-whiteboard.sh        # CLI integration test
+│       └── test-analyze-architecture.sh  # Pipeline + scan integration test
 ├── data/
 │   ├── domains/                  # 18 domain markdown files with boundaries
 │   ├── domains.json              # Domain ID list (for script lookups)
@@ -276,7 +279,7 @@ User config at `~/.claude/professor/config.json`:
 node --test scripts/test/*.test.js
 ```
 
-151 tests covering FSRS math, lookup modes, update features, migration, utils, session state, graph management, and a full lifecycle simulation.
+162 tests covering FSRS math, lookup modes, update features, migration, utils, session state, graph management, scan command, and a full lifecycle simulation.
 
 ### Lifecycle Simulation
 
@@ -286,13 +289,14 @@ node --test scripts/test/lifecycle.test.js
 
 Simulates the complete concept chain without API calls: L1 resolution → teach + grade → FSRS status check → body writing → L2 creation with parent ensure → create-parent guard → Phase 2 migration.
 
-### CLI Integration (requires API access)
+### CLI Integration
 
 ```bash
 bash tests/cli/test-whiteboard.sh
+bash tests/cli/test-analyze-architecture.sh
 ```
 
-Validates plugin structure, registry format (407 concepts, 18 domains), domain files, and script health.
+`test-whiteboard.sh` validates plugin structure, registry format (407 concepts, 18 domains), domain files, and script health. `test-analyze-architecture.sh` validates the scan command, manifest size budget, directory exclusions, type priority ordering, and compact output format.
 
 ## Contributing
 

@@ -170,6 +170,6 @@ Output ONLY valid JSON in this exact format — no prose, no markdown fences, no
 - **L1 concepts are seed-only**: Never create new L1 concept definitions. L1 concepts come only from the seed registry. Use `--create-parent` only to ensure L1 placeholders exist for L2 concepts.
 - **All script paths** use `${CLAUDE_PLUGIN_ROOT}/scripts/` — do not hardcode or guess paths.
 - **Naming**: New concept IDs must be lowercase_snake_case with at most 3 words.
-- **Domains**: Only use domains from the domains.json list. Use `custom` if nothing fits.
+- **Domains**: Only use domains from the 18 domains in `data/domains/`. If no domain fits, assign to the closest match and flag in scope_note.
 - **Errors**: If any script fails, record the raw error in the relevant concept entry under an `"error"` field and continue processing other candidates.
 - **Output**: Return only the JSON object. Do not wrap it in markdown code fences or add any surrounding text.

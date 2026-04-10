@@ -113,7 +113,61 @@ Use component names from Step 3 as node labels. External services (databases, ca
 
 Organize into sections: Runtime, Framework, Data Stores, Infrastructure, Key Dependencies (table with package, version, purpose). Source ALL information from the package manifests and config files read in Step 1 — never guess versions.
 
-## Step 5: Handle Modes
+## Step 5: Write Concept Scope
+
+After writing the supporting files, output a `docs/professor/architecture/concept-scope.json` file to help the `/whiteboard` skill scope concept-agent searches.
+
+Detect the tech stack from the package manifests and config files gathered in Step 1, then apply these domain heuristics:
+
+| Tech Signals | Domains |
+|---|---|
+| Python, FastAPI, Django, Flask | `architecture`, `databases`, `api_design` |
+| React, Next.js, Vue, Angular | `frontend` |
+| Docker, Kubernetes, Terraform, Helm | `devops_infrastructure` |
+| PyTorch, TensorFlow, scikit-learn, pandas | `machine_learning` |
+| Kafka, RabbitMQ, SQS, NATS, Celery | `data_processing`, `architecture` |
+| PostgreSQL, MySQL, MongoDB, Redis, DynamoDB | `databases` |
+
+A project may match multiple rows — include all relevant domains. If a technology doesn't fit any row above, use `custom`.
+
+For `detected_patterns`, run the concept registry search for each major technology or architectural pattern identified:
+
+```bash
+node ${CLAUDE_PLUGIN_ROOT}/scripts/lookup.js search \
+  --query "{technology or pattern}" \
+  --registry-path ${CLAUDE_PLUGIN_ROOT}/data/concepts_registry.json \
+  --domains-path ${CLAUDE_PLUGIN_ROOT}/data/domains.json
+```
+
+Collect the `id` fields from the top matches. Include only concept IDs that appear in the registry — do not invent IDs.
+
+Write the file using this exact structure:
+
+```json
+{
+  "relevant_domains": ["detected domains based on tech stack"],
+  "tech_stack": ["detected technologies"],
+  "detected_patterns": ["concept_ids matching detected patterns"],
+  "generated_from": "analyze-architecture",
+  "last_updated": "ISO timestamp"
+}
+```
+
+Example:
+
+```json
+{
+  "relevant_domains": ["architecture", "databases", "api_design", "devops_infrastructure"],
+  "tech_stack": ["Python", "FastAPI", "PostgreSQL", "Docker", "Redis"],
+  "detected_patterns": ["rest_api_design", "connection_pooling", "cache_invalidation", "container_orchestration"],
+  "generated_from": "analyze-architecture",
+  "last_updated": "2024-01-15T10:30:00Z"
+}
+```
+
+If graph.js or lookup.js fails during this step, write the file with the information you have and flag the error in the output summary.
+
+## Step 6: Handle Modes
 
 **`--update` mode:**
 1. Read existing `docs/professor/architecture/_index.md` and component files
@@ -135,7 +189,7 @@ Organize into sections: Runtime, Framework, Data Stores, Infrastructure, Key Dep
 4. Identify new directories not covered by existing components
 5. Write delta to `docs/professor/branch-deltas/{branch-name}/delta.md` with sections: New Components, Modified Components, New Dependencies, Structural Changes
 
-## Step 6: Verify Output
+## Step 7: Verify Output
 
 Before presenting results to the developer:
 

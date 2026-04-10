@@ -12,56 +12,47 @@ claude-professor solves this by embedding a teaching layer directly into your de
 
 ## What It Does
 
-### `/professor` — Learn Before You Build
+### `/whiteboard` — Design With Teaching
 
-When you invoke `/professor` with a task description, the plugin:
+The primary entry point. Conducts a domain-agnostic design conversation for any feature or system, teaching concepts as they arise:
 
-1. **Analyzes your task** — A dedicated knowledge agent (prompted as a solutions architect) identifies all relevant technical concepts, including foundational prerequisites and adjacent concerns that a keyword search would miss
-2. **Checks your knowledge** — Looks up each concept in your personal skill profile, using FSRS (Free Spaced Repetition Scheduler) to determine what you know well, what's decaying, and what's new
-3. **Teaches adaptively** — For concepts you know well: a one-liner acknowledgment. For decaying knowledge: a quick flashcard check. For new concepts: a full explanation with analogy, real-world example, and use case, followed by a recall question
-4. **Quizzes you** — At the end of the session, a rapid-fire MCQ pop quiz on new and weak concepts to verify retention
-5. **Produces a handoff document** — A structured markdown file with an expanded implementation prompt, probing instructions for downstream tools, and a summary of your understanding
+1. **Loads context** — reads your architecture doc and project domain scope, or does a lightweight codebase scan
+2. **Clarifies requirements** — filters 12-15 architectural concerns to the 5-8 relevant to your task, infers constraints from existing architecture
+3. **Checks your knowledge** — spawns a concept-agent to resolve L1 concepts against the 407-concept seed registry + your profile, computes FSRS status
+4. **Teaches lazily** — when a concept is central to a design decision, spawns professor-teach to teach or review it before building on it
+5. **Proposes HLD** — 2-3 design options with tradeoffs, debates counter-proposals with escalating critique
+6. **Dives into LLD** (optional) — implementation details where L2 concepts arise and get created dynamically
+7. **Writes a design document** — structured HLD/LLD to `docs/professor/designs/`
+
+Supports `--continue` to resume interrupted sessions.
 
 ### `/analyze-architecture` — Map Your Codebase
 
-Scans your codebase and produces a high-level architecture graph stored as interlinked markdown files:
+Scans your codebase and produces a high-level architecture graph:
 
 ```
 docs/professor/architecture/
 ├── _index.md                    # Component index + overview
 ├── components/
 │   ├── auth-service.md          # Wiki-linked component files
-│   ├── api-gateway.md
 │   └── ...
 ├── data-flow.md                 # Mermaid diagrams
-└── tech-stack.md                # Dependencies, versions
+├── tech-stack.md                # Dependencies, versions
+└── concept-scope.json           # Detected domains + tech stack
 ```
 
-- Uses parallel subagents for data gathering (file scanner + dependency analyzer)
-- Package manifests and config files are ground truth — never guesses tech stack
-- Asks the developer when architecture is ambiguous
-- Supports `--update` (refresh existing) and `--branch {name}` (delta from base)
+Supports `--update` (refresh) and `--branch {name}` (delta from base).
 
-### `/backend-architect` — Design With Teaching
+### `/professor-teach` — Single Concept Teaching
 
-Conducts a system design conversation for a new backend feature, grounded in your project's actual architecture:
-
-1. **Loads context** — reads your architecture doc, or does a lightweight codebase scan if none exists
-2. **Clarifies requirements** — one question at a time, multiple-choice preferred
-3. **Analyzes architecture fit** — which components are affected, what constraints exist
-4. **Proposes design options** — 2-3 approaches with tradeoffs, leads with recommendation
-5. **Debates constructively** — challenges risky choices with specific failure scenarios, accepts sound reasoning
-6. **Teaches lazily** — whenever a concept is central to a design decision, checks your knowledge and teaches if needed (via `/professor-teach` in a forked context)
-7. **Writes a design document** — single HLD file to `docs/professor/designs/` suitable as input to planning tools
-
-Supports `--continue` to resume interrupted sessions via session state.
+Teaches a single concept in a forked context. Used by `/whiteboard` internally, but also available standalone. Explains with analogy + example, asks a recall question, grades, and writes teaching notes to the concept file.
 
 ## What It Is NOT
 
 - **Not a pair programmer** — It doesn't write code or guide you through implementation
 - **Not a code generator** — It never writes code. Ever.
 - **Not a code reviewer** — It doesn't review existing code quality
-- **Not a planner** — It doesn't plan implementation steps. It teaches concepts and produces handoffs/designs for your planning tool of choice
+- **Not a planner** — It produces designs for your planning tool of choice
 
 ## Installation
 
@@ -78,14 +69,6 @@ Supports `--continue` to resume interrupted sessions via session state.
 /reload-plugins
 ```
 
-### From a Specific Branch
-
-```bash
-/plugin marketplace add theadityamittal/claude-professor@branch-name
-/plugin install claude-professor
-/reload-plugins
-```
-
 ### Requirements
 
 - Claude Code CLI
@@ -93,18 +76,24 @@ Supports `--continue` to resume interrupted sessions via session state.
 
 ## Usage
 
-### Teaching Flow
+### Design Conversation
 
 ```
-> /claude-professor:professor I want to add Redis caching to my API to handle 10k concurrent users
+> /claude-professor:whiteboard I want to add real-time notifications with WebSocket support
 ```
 
-The professor will:
-1. Spawn a knowledge agent to analyze the task and identify relevant concepts
-2. Check your skill profile for each concept
-3. Walk you through concepts you need to learn or review
-4. Run a quick MCQ quiz at the end
-5. Write a handoff document to `docs/professor/`
+The whiteboard will:
+1. Load your architecture context and identify relevant domains
+2. Present filtered requirements with architecture-inferred constraints
+3. Resolve concepts against your knowledge profile via FSRS
+4. Teach weak/new concepts before building on them
+5. Propose 2-3 design options, debate tradeoffs
+6. Write a design document to `docs/professor/designs/`
+
+Resume an interrupted session:
+```
+> /claude-professor:whiteboard --continue
+```
 
 ### Architecture Analysis
 
@@ -112,34 +101,7 @@ The professor will:
 > /claude-professor:analyze-architecture
 ```
 
-Produces a multi-file architecture graph in `docs/professor/architecture/`. Run once per project, refresh with `--update` after structural changes.
-
-### System Design
-
-```
-> /claude-professor:backend-architect I want to add real-time notifications to my API
-```
-
-Interactive design conversation that:
-- References your architecture doc (if available)
-- Teaches concepts when it detects gaps
-- Writes a design document with decisions, tradeoffs, and probing instructions
-
-Resume an interrupted session:
-```
-> /claude-professor:backend-architect --continue
-```
-
-### Using the Handoff/Design Documents
-
-Documents are written to `docs/professor/`:
-- **Handoff docs** — from `/professor`, contain expanded implementation prompts and probing instructions
-- **Design docs** — from `/backend-architect`, contain full HLD with architecture context, requirements, component changes, and Mermaid diagrams
-
-Feed these into your preferred next step:
-- **Superpowers brainstorming:** Reference the document as context for `/brainstorming`
-- **Claude Code plan mode:** Point Claude at the document
-- **Manual implementation:** Read it yourself as a spec
+Produces a multi-file architecture graph in `docs/professor/architecture/`. Run once per project, refresh with `--update`.
 
 ## Architecture
 
@@ -148,221 +110,213 @@ Feed these into your preferred next step:
 ```
 claude-professor/
 ├── .claude-plugin/
-│   ├── plugin.json               # Plugin manifest (v2.0.0)
+│   ├── plugin.json               # Plugin manifest (v3.0.0)
 │   └── marketplace.json          # Marketplace registry
 ├── skills/
-│   ├── professor/
-│   │   └── SKILL.md              # Core teaching flow
+│   ├── whiteboard/               # Primary design conversation skill
+│   │   ├── SKILL.md              # Orchestrator (4-phase flow)
+│   │   ├── templates/
+│   │   │   └── design-doc.md     # Design document template
+│   │   └── protocols/
+│   │       ├── critique.md       # Critique escalation protocol
+│   │       └── concept-check.md  # Concept identification protocol
 │   ├── professor-teach/
-│   │   └── SKILL.md              # Single-concept teaching (forked context)
-│   ├── analyze-architecture/
-│   │   └── SKILL.md              # Codebase scanning → architecture graph
-│   └── backend-architect/
-│       └── SKILL.md              # Design conversation with teaching
+│   │   └── SKILL.md              # Single-concept teaching
+│   └── analyze-architecture/
+│       └── SKILL.md              # Codebase scanning
 ├── agents/
-│   └── knowledge-agent.md        # Solutions architect agent
+│   └── concept-agent.md          # Concept resolution + L2 creation
 ├── scripts/
-│   ├── fsrs.js                   # FSRS-5 algorithm module (pure math)
-│   ├── utils.js                  # File I/O, markdown frontmatter, date math
-│   ├── lookup.js                 # Search registry + get mastery status
-│   ├── update.js                 # Write FSRS scores to profile
+│   ├── fsrs.js                   # FSRS-5 algorithm (pure math)
+│   ├── utils.js                  # File I/O, markdown frontmatter
+│   ├── lookup.js                 # Search, status, list-concepts, reconcile
+│   ├── update.js                 # Write scores, create concepts, add aliases
 │   ├── session.js                # Design session state management
 │   ├── graph.js                  # Architecture graph management
 │   ├── detect-changes.js         # Structural change detection hook
-│   ├── migrate-v2.js             # One-time JSON → markdown migration
-│   └── test/                     # Automated tests (90 tests, node:test)
+│   ├── migrate-v3.js             # Phase 2 → Phase 3 migration
+│   └── test/                     # Automated tests (151 tests, node:test)
+├── tests/
+│   └── cli/
+│       └── test-whiteboard.sh    # CLI integration test
 ├── data/
-│   ├── domains.json              # Fixed domain taxonomy (append-only)
-│   ├── concepts_registry.json    # 150-200 starter concepts
+│   ├── domains/                  # 18 domain markdown files with boundaries
+│   ├── domains.json              # Domain ID list (for script lookups)
+│   ├── concepts_registry.json    # 407 L1 seed concepts
 │   └── preferred_sources.json    # Curated documentation URLs
 ├── config/
 │   └── default_config.json       # Default settings
 └── README.md
 ```
 
-### Runtime Data (User's Machine)
+### 18 Domains
 
-```
-~/.claude/professor/
-├── config.json                   # User config (overrides defaults)
-├── concepts/                     # Per-concept markdown files
-│   ├── databases/
-│   │   ├── connection_pooling.md
-│   │   ├── cache_invalidation.md
-│   │   └── ...
-│   ├── backend/
-│   │   ├── rest_api.md
-│   │   └── ...
-│   └── ...                       # Created as needed per domain
-```
+Research-backed from SWEBOK v4, ACM CS2023, DDIA, and university curricula:
 
-### Project Data
+| Domain | Display Name | L1 Concepts |
+|--------|-------------|-------------|
+| `algorithms_data_structures` | Algorithms & Data Structures | 29 |
+| `architecture` | Software Architecture & Design | 27 |
+| `distributed_systems` | Distributed Systems | 26 |
+| `databases` | Data Storage & Management | 28 |
+| `operating_systems` | Operating Systems | 19 |
+| `networking` | Computer Networks | 16 |
+| `security` | Security & Cryptography | 28 |
+| `testing` | Software Testing & QA | 23 |
+| `concurrency` | Concurrency & Parallelism | 23 |
+| `machine_learning` | AI & Machine Learning | 30 |
+| `programming_languages` | Programming Languages & Type Systems | 22 |
+| `api_design` | API Design & Integration | 21 |
+| `reliability_observability` | Reliability & Observability | 24 |
+| `performance_scalability` | Performance & Scalability | 15 |
+| `data_processing` | Data Processing & Pipelines | 19 |
+| `devops_infrastructure` | DevOps & Infrastructure | 26 |
+| `frontend` | Frontend Engineering | 18 |
+| `software_construction` | Software Construction | 13 |
 
-```
-{project}/docs/professor/
-├── architecture/                 # From /analyze-architecture
-│   ├── _index.md
-│   ├── components/
-│   ├── data-flow.md
-│   └── tech-stack.md
-├── designs/                      # From /backend-architect
-│   └── 2026-04-10-redis-caching.md
-├── branch-deltas/                # From /analyze-architecture --branch
-└── {handoff docs from /professor}
-```
+Each domain is a markdown file in `data/domains/` with boundary definitions that tell the concept-agent where domain edges are.
+
+### Two-Level Concept Hierarchy
+
+- **L1 (Seed)** — 407 architectural concepts shipped with the plugin. "A concept you'd draw as a box on a whiteboard." Append-only via plugin updates.
+- **L2 (Dynamic)** — Implementation concepts created by the concept-agent during LLD sessions. Each has a parent L1. Grows organically per user.
+
+### FSRS-Driven Concept Status
+
+Status is **computed at resolution time**, never stored:
+
+| Status | Derivation | Action |
+|--------|------------|--------|
+| `new` | No user profile file | Professor-teach creates file + teaches |
+| `encountered_via_child` | File exists, `review_history` empty | Professor-teach teaches (first teach) |
+| `teach_new` | File exists, R < 0.3 | Professor-teach re-teaches |
+| `review` | File exists, 0.3 ≤ R ≤ 0.7 | Professor-teach reviews |
+| `skip` | File exists, R > 0.7 | No teaching needed |
 
 ### Concept File Format
-
-Concepts are stored as markdown files with JSON frontmatter:
 
 ```markdown
 ---json
 {
-  "concept_id": "connection_pooling",
-  "domain": "databases",
-  "is_registry_concept": true,
+  "concept_id": "chunking_strategy",
+  "domain": "machine_learning",
+  "level": 2,
+  "parent_concept": "retrieval_augmented_gen",
+  "is_seed_concept": false,
   "difficulty_tier": "intermediate",
-  "first_encountered": "2026-04-01T14:30:00Z",
-  "last_reviewed": "2026-04-05T10:15:00Z",
+  "aliases": ["document_chunking", "text_chunking"],
+  "related_concepts": ["tokenization"],
+  "scope_note": "Strategies for splitting documents into chunks for retrieval.",
+  "first_encountered": "2026-04-10T14:30:00Z",
+  "last_reviewed": "2026-04-10T15:00:00Z",
   "review_history": [
-    {"date": "2026-04-01T14:30:00Z", "grade": 2},
-    {"date": "2026-04-03T09:00:00Z", "grade": 3},
-    {"date": "2026-04-05T10:15:00Z", "grade": 3}
+    {"date": "2026-04-10T15:00:00Z", "grade": 3, "context": "RAG design"}
   ],
-  "fsrs_stability": 12.5,
-  "fsrs_difficulty": 4.2,
-  "documentation_url": "https://docs.sqlalchemy.org/en/20/core/pooling.html"
+  "fsrs_stability": 2.3,
+  "fsrs_difficulty": 6.4
 }
 ---
 
-# Connection Pooling
+# Chunking Strategy
 
-Maintains a pool of reusable database connections instead of opening a new connection for each request.
+## Key Points
+- Chunk size vs. retrieval precision tradeoff
+- Overlap preserves context at boundaries
 
 ## Notes
-Learned in context of FastAPI async handlers.
+Learned in context of document Q&A design.
 ```
-
-Scripts read/write only the JSON frontmatter. The markdown body is human-readable context preserved verbatim during updates.
-
-### Component Responsibilities
-
-| Component | Does | Does NOT |
-|-----------|------|----------|
-| **Professor Skill** | Conducts teaching conversation, asks questions, runs MCQ quiz, writes handoff document | Do math, read/write files directly, identify concepts |
-| **Knowledge Agent** | Analyzes task as solutions architect, identifies concepts, runs lookup scripts, produces briefing | Teach, interact with user, write handoff |
-| **Backend Architect Skill** | Conducts design conversation, checks concepts lazily, delegates teaching, writes design doc | Write code, teach directly (delegates to professor-teach) |
-| **Analyze Architecture Skill** | Scans codebase via subagents, writes component files, generates index and diagrams | Teach, interact beyond clarifying questions |
-| **Professor Teach Skill** | Teaches a single concept in forked context, returns grade + summary to caller | Run full teaching sessions, interact beyond one concept |
-| **Scripts** | FSRS computation, file I/O, concept search, score updates, session state, graph management | Any reasoning, any teaching, any user interaction |
 
 ## Key Design Decisions
 
-### Why FSRS Over Simple Counters
+| Decision | Reasoning |
+|----------|-----------|
+| FSRS-5 spaced repetition | Scientifically-backed review scheduling. Deterministic math in Node.js. |
+| Markdown with JSON frontmatter | LLMs read markdown natively. JSON frontmatter for deterministic script parsing. |
+| Lazy teaching during design | Concepts emerge in context. Batch analysis over-teaches irrelevant concepts. |
+| Two-level hierarchy | L1 maps to HLD, L2 to LLD. Conversation flow guarantees prerequisites. |
+| Domain-agnostic whiteboard | One skill covers all 18 SWE domains instead of per-domain specialists. |
+| Concept-agent with semantic matching | 407 concepts + scope notes + LLM judgment = resolution always succeeds. |
+| Status computed, never stored | FSRS `computeRetrievability` + `determineAction` covers all states. |
 
-FSRS (Free Spaced Repetition Scheduler) is a spaced repetition algorithm that determines optimal review intervals. When you learn a concept, FSRS calculates when you're likely to forget it. If you review at the right moment, the memory strengthens and the next interval gets longer. If you struggle, the interval shortens.
+## Migration
 
-### Why Markdown with JSON Frontmatter
+### From Phase 2 (v2.x)
 
-LLMs read markdown natively and perform better with it than raw JSON arrays. FSRS data lives in JSON frontmatter (parsed deterministically by scripts via `JSON.parse()`), while the human-readable body provides context. Individual files per concept enable granular updates without loading entire domains.
+```bash
+node ${CLAUDE_PLUGIN_ROOT}/scripts/migrate-v3.js --profile-dir ~/.claude/professor/concepts/
+```
 
-### Why Lazy Concept Checking in Design Sessions
+Handles domain renames (`systems` → `operating_systems`, `ml_ai` → `machine_learning`), merges (`algorithms` + `data_structures` → `algorithms_data_structures`), backend concept redistribution, and field enrichment. Idempotent.
 
-Concepts emerge during design conversation — they can't all be identified upfront. A batch analysis over-identifies (teaches irrelevant concepts) and under-identifies (misses concepts that emerge from specific design choices). Checking lazily when a concept is central to a design decision ensures teaching is relevant and timely.
+### From Phase 1 (v1.x)
 
-### Why a Knowledge Agent Instead of Keyword Matching
-
-A prompt like "make my API handle 10k concurrent users" doesn't contain the words "connection pooling", "cache invalidation", or "horizontal scaling." But a solutions architect hearing this prompt would immediately think of all three.
-
-### Why Node.js Scripts Instead of LLM Math
-
-LLMs are non-deterministic. FSRS stability computations (exponential decay, difficulty adjustments) must be deterministic: same inputs, same outputs, every time. Claude Code already requires Node.js, so there are zero additional dependencies.
-
-### Why Backend-Specialized First
-
-A generalist giving mediocre frontend advice is worse than no advice. The backend domain has clear best practices and heavy registry coverage (91 concepts in relevant domains). Other domains (frontend, mobile) are added as separate architect skills later.
+Run v2 migration first, then v3:
+```bash
+node ${CLAUDE_PLUGIN_ROOT}/scripts/migrate-v2.js --source ~/.claude/professor/profile/ --target ~/.claude/professor/concepts/
+node ${CLAUDE_PLUGIN_ROOT}/scripts/migrate-v3.js --profile-dir ~/.claude/professor/concepts/
+```
 
 ## Configuration
 
-User config at `~/.claude/professor/config.json` (created on first run with defaults):
-
-```json
-{
-  "web_search_enabled": false,
-  "preferred_sources": [],
-  "handoff_directory": "docs/professor/",
-  "profile_directory": "~/.claude/professor/concepts/"
-}
-```
+User config at `~/.claude/professor/config.json`:
 
 | Field | Type | Default | Description |
 |-------|------|---------|-------------|
-| `web_search_enabled` | boolean | `false` | Whether the professor can search the web during teaching. |
-| `preferred_sources` | string[] | `[]` | Documentation domains to prefer when searching. |
-| `handoff_directory` | string | `"docs/professor/"` | Project-relative path for handoff and design documents. |
-| `profile_directory` | string | `"~/.claude/professor/concepts/"` | Where your learning profile is stored. |
+| `web_search_enabled` | boolean | `false` | Whether the professor can search the web during teaching |
+| `preferred_sources` | string[] | `[]` | Documentation domains to prefer |
+| `handoff_directory` | string | `"docs/professor/"` | Project-relative path for design documents |
+| `profile_directory` | string | `"~/.claude/professor/concepts/"` | Where your learning profile is stored |
 
-## Migration from v1
+## Testing
 
-If you have existing Phase 1 profile data (JSON arrays in `~/.claude/professor/profile/`):
+### Unit & Integration Tests (CI-safe)
 
 ```bash
-node ${CLAUDE_PLUGIN_ROOT}/scripts/migrate-v2.js \
-  --source ~/.claude/professor/profile/ \
-  --target ~/.claude/professor/concepts/
+node --test scripts/test/*.test.js
 ```
 
-The migration is idempotent — running twice doesn't create duplicates. The old `profile/` directory is preserved (not deleted automatically).
+151 tests covering FSRS math, lookup modes, update features, migration, utils, session state, graph management, and a full lifecycle simulation.
 
-## Roadmap
+### Lifecycle Simulation
 
-### Phase 1 (Complete)
-- Core teaching flow with FSRS-based adaptive learning
-- Knowledge agent for intelligent concept discovery
-- Node.js scripts for deterministic computation
-- Local JSON profile storage with per-domain files
-- Concept registry with 150-200 starter concepts
-- Handoff document generation
+```bash
+node --test scripts/test/lifecycle.test.js
+```
 
-### Phase 2 (Current)
-- Storage migration: JSON arrays → markdown with JSON frontmatter
-- Architecture analysis (`/analyze-architecture`) with multi-file graph output
-- Backend system design (`/backend-architect`) with lazy concept checking
-- Single-concept teaching (`/professor-teach`) in forked context
-- Session state management for design conversations
-- Structural change detection hook (advisory)
-- One-time migration script for v1 profiles
+Simulates the complete concept chain without API calls: L1 resolution → teach + grade → FSRS status check → body writing → L2 creation with parent ensure → create-parent guard → Phase 2 migration.
 
-### Phase 3 (Planned)
-- Post-PR quiz hook (test retention after implementation)
-- Implicit scoring from design decisions
-- Web search for concept freshness verification
-- Frontend architect skill
-- Learning analytics and progress visualization
+### CLI Integration (requires API access)
+
+```bash
+bash tests/cli/test-whiteboard.sh
+```
+
+Validates plugin structure, registry format (407 concepts, 18 domains), domain files, and script health.
 
 ## Contributing
 
-Contributions are welcome, especially to the concept registry.
+Contributions welcome, especially to the seed concept registry.
 
-### Adding Concepts to the Registry
+### Adding Concepts
 
 1. Fork the repo
-2. Add entries to `data/concepts_registry.json` following the existing format
-3. Assign each concept to a domain from `data/domains.json`
+2. Add entries to `data/concepts_registry.json` following the Phase 3 format (concept_id, domain, difficulty_tier, level, parent_concept, is_seed_concept, aliases, related_concepts, scope_note)
+3. Assign to one of the 18 domains. Dedup principle: concept lives in the domain where the design decision is made.
 4. Use `lowercase_snake_case`, max 3 words for concept IDs
-5. Set an appropriate difficulty level: `foundational`, `intermediate`, or `advanced`
-6. Submit a PR
+5. Submit a PR
 
 ### Adding Domains
 
-New domains can only be added (never renamed or removed). If you think a domain is missing:
+Domains are append-only. Open an issue to discuss before adding. New domains must be permanent SWE knowledge categories backed by academic/industry consensus.
 
-1. Open an issue explaining the use case
-2. If approved, add the domain to `data/domains.json` with `"parent": null` (or an existing parent if it's a specialization)
+## Deprecated Skills
 
-### Improving Teaching Logic
+These skills from Phase 1/2 are superseded by `/whiteboard`:
+- `/professor` — batch upfront teaching (replaced by lazy teaching in `/whiteboard`)
+- `/backend-architect` — backend-only design conversation (replaced by domain-agnostic `/whiteboard`)
 
-The professor's teaching behavior is defined in `skills/professor/SKILL.md`. The design conversation flow is in `skills/backend-architect/SKILL.md`. Improvements to explanation quality, question design, or flow are welcome as PRs.
+The `knowledge-agent` is replaced by `concept-agent`.
 
 ## License
 

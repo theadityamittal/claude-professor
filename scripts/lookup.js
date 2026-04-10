@@ -32,7 +32,7 @@ function status(conceptIds, profileDir, domainsPath, registryPath) {
   const now = isoNow();
 
   const concepts = conceptIds.map(conceptId => {
-    const registryEntry = registry.find(c => c.id === conceptId);
+    const registryEntry = registry.find(c => c.concept_id === conceptId);
     let domain = registryEntry ? registryEntry.domain : null;
 
     if (!domain) {

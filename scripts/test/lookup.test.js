@@ -128,4 +128,17 @@ describe('lookup status mode', () => {
     assert.ok(fs.existsSync(newProfileDir));
     assert.equal(result.concepts[0].status, 'new');
   });
+
+  it('resolves domain from registry for concepts not in profile', () => {
+    // connection_pooling is in testRegistry with domain 'databases'
+    // but has no profile file — domain must come from registry
+    const result = runLookup([
+      'status',
+      '--concepts', 'connection_pooling',
+      '--profile-dir', profileDir,
+      '--domains-path', domainsPath,
+      '--registry-path', path.join(tmpDir, 'registry.json'),
+    ]);
+    assert.equal(result.concepts[0].domain, 'databases');
+  });
 });

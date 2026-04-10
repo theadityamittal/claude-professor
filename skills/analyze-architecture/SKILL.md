@@ -71,7 +71,7 @@ Using both agents' results, work through these steps in order:
      --registry-path ${CLAUDE_PLUGIN_ROOT}/data/concepts_registry.json \
      --domains-path ${CLAUDE_PLUGIN_ROOT}/data/domains.json
    ```
-   Use the `id` field from matched results. If a concept isn't in the registry, use a descriptive snake_case identifier.
+   Use the `concept_id` field from matched results. If a concept isn't in the registry, use a descriptive snake_case identifier.
 
 4. **Ask the developer when uncertain.** If architecture is ambiguous (monolith vs microservices, unclear component boundaries, unusual project structure), ask rather than guess.
 
@@ -139,7 +139,7 @@ node ${CLAUDE_PLUGIN_ROOT}/scripts/lookup.js search \
   --domains-path ${CLAUDE_PLUGIN_ROOT}/data/domains.json
 ```
 
-Collect the `id` fields from the top matches. Include only concept IDs that appear in the registry — do not invent IDs.
+Collect the `concept_id` fields from the top matches. Include only concept IDs that appear in the registry — do not invent IDs.
 
 Write the file using this exact structure:
 

@@ -240,6 +240,21 @@ describe('graph.js scan', () => {
     assert.equal(result.scan_budget, 100);
   });
 
+  it('sorts files deterministically by path within same type', () => {
+    fs.writeFileSync(path.join(tmpDir, 'zebra.js'), '');
+    fs.writeFileSync(path.join(tmpDir, 'alpha.js'), '');
+    fs.writeFileSync(path.join(tmpDir, 'middle.js'), '');
+    const result = runGraph(['scan', '--dir', tmpDir, '--budget', '100']);
+    const paths = result.files.filter(f => f.type === 'source').map(f => f.path);
+    assert.deepStrictEqual(paths, [...paths].sort());
+  });
+
+  it('rejects non-numeric budget', () => {
+    assert.throws(() => {
+      runGraph(['scan', '--dir', tmpDir, '--budget', 'abc']);
+    });
+  });
+
   it('fails without --dir argument', () => {
     assert.throws(() => {
       runGraph(['scan', '--budget', '10']);

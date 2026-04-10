@@ -203,6 +203,10 @@ function scan(dir, budget) {
     return 'other';
   }
 
+  if (!fs.existsSync(dir)) {
+    throw new Error(`scan: directory does not exist: "${dir}"`);
+  }
+
   const allFiles = [];
 
   function walk(currentDir, relBase) {
@@ -233,6 +237,7 @@ function scan(dir, budget) {
   // Sort by type priority so manifests/configs survive budget trimming
   allFiles.sort((a, b) =>
     (TYPE_PRIORITY[a.type] ?? 5) - (TYPE_PRIORITY[b.type] ?? 5)
+    || a.path.localeCompare(b.path)
   );
 
   const truncated = allFiles.length > budget;
@@ -298,10 +303,15 @@ if (require.main === module) {
           args['scan-dirs'],
         );
         break;
-      case 'scan':
+      case 'scan': {
         validateArgs(['dir'], 'scan --dir PATH [--budget N]');
-        result = scan(path.resolve(args.dir), parseInt(args.budget || '100', 10));
+        const budget = parseInt(args.budget || '100', 10);
+        if (isNaN(budget) || budget < 1) {
+          throw new Error('budget must be a positive integer');
+        }
+        result = scan(path.resolve(args.dir), budget);
         break;
+      }
       default:
         process.stderr.write(`Unknown mode: ${mode}. Use create-component, update-index, detect-changes, or scan.\n`);
         process.exit(1);

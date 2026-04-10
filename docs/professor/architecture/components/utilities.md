@@ -1,21 +1,23 @@
 # Utilities
 
 ## Description
-Shared utility module providing file I/O (JSON and markdown with frontmatter), date math, CLI argument parsing, and atomic write operations used by all scripts.
+Shared utility functions: JSON read/write, markdown frontmatter parsing, directory management, path expansion, argument parsing, date calculations.
 
 ## Concepts Involved
-- `file_descriptor`
+- `defensive_programming`
+- `refactoring`
 
 ## Depended On By
-- [[profile-manager]]
+- [[fsrs-engine]]
+- [[concept-registry]]
 - [[architecture-analyzer]]
-- [[design-conversation]]
+- [[session-manager]]
+- [[profile-manager]]
 
 ## Key Files
 - scripts/utils.js
-- scripts/test/utils.test.js
 
 ## Patterns
-- Atomic writes via temp file
-- Markdown frontmatter parsing
-- Home directory expansion
+- pure utility functions
+- atomic file writes
+- home-dir expansion

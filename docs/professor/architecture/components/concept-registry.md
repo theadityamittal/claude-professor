@@ -1,22 +1,26 @@
 # Concept Registry
 
 ## Description
-Static knowledge base of 180+ technical concepts organized across 17 domains with difficulty tiers. Append-only JSON data files serving as ground truth for concept identification.
+407-concept seed registry spanning 18 technical domains with lookup, search, and reconcile capabilities. Ground truth for concept IDs, aliases, domains, and scope notes.
 
 ## Concepts Involved
-- `graph`
-- `design_patterns`
+- `repository_pattern`
+- `domain_driven_design`
+
+## Depends On
+- [[fsrs-engine]]
 
 ## Depended On By
-- [[profile-manager]]
-- [[knowledge-agent]]
+- [[concept-agent]]
+- [[skill-engine]]
 
 ## Key Files
 - data/concepts_registry.json
 - data/domains.json
-- data/preferred_sources.json
+- scripts/lookup.js
+- scripts/migrate-v3.js
 
 ## Patterns
-- Append-only data store
-- Domain taxonomy
-- Difficulty tiering
+- seed registry
+- alias resolution
+- semantic reconciliation

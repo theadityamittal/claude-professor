@@ -1,19 +1,22 @@
 # Fsrs Engine
 
 ## Description
-FSRS-5 spaced repetition algorithm. Pure math module computing retrievability, stability, difficulty, and scheduling actions for concept mastery tracking.
+Core Free Spaced Repetition Scheduler (FSRS-5) implementation. Computes retrievability, stability, difficulty, and schedules next review intervals for each concept.
 
 ## Concepts Involved
-- `design_patterns`
+- `refactoring`
+- `defensive_programming`
 
 ## Depended On By
+- [[concept-agent]]
 - [[profile-manager]]
+- [[concept-registry]]
 
 ## Key Files
 - scripts/fsrs.js
-- scripts/test/fsrs.test.js
+- scripts/update.js
 
 ## Patterns
-- Pure function module
-- Pre-trained weight parameters
-- Grade-based state transitions
+- pure functions
+- algorithm implementation
+- grade-based scheduling

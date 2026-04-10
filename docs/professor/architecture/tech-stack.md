@@ -1,41 +1,55 @@
 # Tech Stack
 
-## Runtime & Platform
+## Runtime
 
-| Layer | Technology | Notes |
-|-------|-----------|-------|
-| Runtime | Node.js (built-ins only) | No npm dependencies |
-| Platform | Claude Code Plugin System | Skills, Commands, Agents |
-| Data Format | JSON + Markdown with frontmatter | File-based storage |
-| Algorithm | FSRS-5 | Free Spaced Repetition Scheduler |
-| Test Framework | `node:test` | Node.js built-in test runner |
+| Component | Details |
+|-----------|---------|
+| Runtime | Node.js (required by Claude Code — no additional install) |
+| Language | JavaScript (CommonJS modules, `'use strict'`) |
+| Platform | Claude Code plugin system |
+
+## Framework
+
+This is not a web application. It is a **Claude Code plugin** that runs as skill definitions (markdown) orchestrating Node.js scripts and subagents.
+
+| Layer | Technology |
+|-------|-----------|
+| Skill definitions | Markdown with YAML frontmatter (SKILL.md files) |
+| Agent definitions | Markdown with YAML frontmatter (agents/*.md) |
+| Script runtime | Node.js with zero external dependencies |
+| Plugin packaging | `.claude-plugin/marketplace.json` + `plugin.json` |
+
+## Data Stores
+
+| Store | Location | Format |
+|-------|----------|--------|
+| Concept seed registry | `data/concepts_registry.json` | JSON array (407 entries) |
+| Domain definitions | `data/domains.json` + `data/domains/*.md` | JSON + Markdown (18 domains) |
+| User concept profiles | `~/.claude/professor/concepts/{domain}/{concept}.md` | Markdown with FSRS frontmatter |
+| Session state | `docs/professor/.session-state.json` | JSON |
+| Architecture output | `docs/professor/architecture/` | Markdown + JSON |
+| Design documents | `docs/professor/designs/` | Markdown |
+| Plugin config | `config/default_config.json` | JSON |
+
+## Infrastructure
+
+No external infrastructure required. All data is file-based and local.
 
 ## Key Dependencies
 
 | Package | Version | Purpose |
 |---------|---------|---------|
-| `node:fs` | built-in | File system I/O, atomic writes |
-| `node:path` | built-in | Cross-platform path manipulation |
-| `node:os` | built-in | Home directory resolution |
-| `node:child_process` | built-in | Spawning subprocesses (detect-changes hook) |
-| `node:test` | built-in | Unit test framework |
+| `node:fs` | Built-in | File system operations |
+| `node:path` | Built-in | Path manipulation |
+| `node:os` | Built-in | Home directory expansion |
+| `node:assert` | Built-in | Test assertions |
 
-**Zero external dependencies.** The project deliberately avoids npm packages to ensure it works out of the box with Claude Code's Node.js runtime.
+**Zero external dependencies.** All functionality uses Node.js built-in modules only.
 
-## Data Stores
+## Algorithm
 
-| Store | Location | Format | Purpose |
-|-------|----------|--------|---------|
-| Concept Registry | `data/concepts_registry.json` | JSON array | 180+ concepts with domain + difficulty |
-| Domain Taxonomy | `data/domains.json` | JSON array | 17 domain categories |
-| Preferred Sources | `data/preferred_sources.json` | JSON array | Documentation URLs |
-| Concept Profiles | `~/.claude/professor/concepts/{domain}/{id}.md` | Markdown + frontmatter | Per-user mastery state |
-| Session State | `.session-state.json` | JSON | Ephemeral design conversation state |
-| Architecture Graph | `docs/professor/architecture/` | Markdown files | Component documentation |
-| Handoff Documents | `docs/professor/` | Markdown | Teaching session outputs |
-| Design Documents | `docs/professor/designs/` | Markdown | System design outputs |
-| Default Config | `config/default_config.json` | JSON | Plugin defaults |
-
-## Infrastructure
-
-No external infrastructure required. The plugin runs entirely locally within Claude Code's process, using the filesystem for all persistence. No databases, no APIs, no network calls (unless `web_search_enabled` is configured).
+| Component | Details |
+|-----------|---------|
+| FSRS-5 | Free Spaced Repetition Scheduler v5 with 19 pre-trained weights |
+| Grades | 4-point scale: Again (1), Hard (2), Good (3), Easy (4) |
+| Retrievability | Power-law decay function from stability and elapsed days |

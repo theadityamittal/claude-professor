@@ -4,153 +4,115 @@
 
 ```mermaid
 graph LR
-    PI[plugin-infrastructure] --> TS[teaching-skills]
-    PI --> AA[architecture-analyzer]
-    PI --> DC[design-conversation]
+    SE[Skill Engine] --> CA[Concept Agent]
+    SE --> FE[FSRS Engine]
+    SE --> CR[Concept Registry]
+    SE --> AA[Architecture Analyzer]
+    SE --> SM[Session Manager]
+    SE --> PM[Profile Manager]
+    SE --> PI[Plugin Infrastructure]
 
-    CR[concept-registry] --> PM[profile-manager]
-    CR --> KA[knowledge-agent]
-    CR --> AA
+    CA --> CR
+    CA --> FE
+    CA --> PM
 
-    FE[fsrs-engine] --> PM
-    UT[utilities] --> PM
-    UT --> AA
-    UT --> DC
+    CR --> FE
+    AA --> CR
+    PM --> FE
 
-    PM --> KA
-    PM --> TS
-    PM --> DC
+    CR --> UT[Utilities]
+    FE --> UT
+    AA --> UT
+    SM --> UT
+    PM --> UT
 
-    KA --> TS
-    TS --> DC
-    AA --> DC
+    TS[Test Suite] -.-> FE
+    TS -.-> CR
+    TS -.-> AA
+    TS -.-> SM
+    TS -.-> PM
+
+    PM --> DP[(~/.claude/professor/concepts/)]
+    SM --> SF[(docs/professor/.session-state.json)]
+    AA --> AD[(docs/professor/architecture/)]
+    CR --> RD[(data/concepts_registry.json)]
 ```
 
-## Key Request Flows
-
-### 1. `/professor {task}` — Teaching Flow
+## Sequence: /whiteboard Design Conversation
 
 ```mermaid
 sequenceDiagram
     participant Dev as Developer
-    participant Prof as professor skill
-    participant KA as knowledge-agent
-    participant LU as lookup.js
-    participant CR as concepts_registry.json
-    participant UP as update.js
-    participant FSRS as fsrs.js
+    participant WB as Whiteboard Skill
+    participant SM as Session Manager
+    participant AA as Architecture Docs
+    participant CA as Concept Agent
+    participant CR as Concept Registry
+    participant PM as Profile Manager
+    participant PT as Professor-Teach
 
-    Dev->>Prof: /professor "Add Redis caching"
-    Prof->>KA: Spawn subagent with task
-    KA->>CR: Read registry + domains
-    KA->>LU: search --query "caching redis..."
-    LU-->>KA: matched_concepts
-    KA->>LU: status --concepts "cache_invalidation,..."
-    LU->>FSRS: computeRetrievability()
-    LU->>FSRS: determineAction()
-    FSRS-->>LU: teach_new / review / skip
-    LU-->>KA: concept statuses
-    KA-->>Prof: JSON briefing (teach/review/skip groups)
+    Dev->>WB: /whiteboard "build auth system"
+    WB->>AA: Read _index.md + components
+    WB->>SM: session.js create
+    SM-->>WB: session state
 
-    loop For each teach_new concept
-        Prof->>Dev: Explain + recall question
-        Dev->>Prof: Answer
-        Prof->>Prof: Grade (1-4)
+    WB->>Dev: Present 5-8 architectural concerns
+    Dev-->>WB: Select concerns to discuss
+
+    WB->>CA: Resolve concept candidates
+    CA->>CR: lookup.js reconcile (exact + alias)
+    CA->>PM: Read concept profiles
+    CA->>PM: fsrs.js computeRetrievability
+    CA-->>WB: Concept statuses (skip/review/new/teach_new)
+
+    loop For each weak concept
+        WB->>PT: Spawn professor-teach subagent
+        PT->>Dev: Teach with analogy + example
+        Dev-->>PT: Answer recall question
+        PT->>PM: update.js (FSRS grade)
+        PT-->>WB: Grade result
     end
 
-    loop For each review concept
-        Prof->>Dev: Flashcard prompt
-        Dev->>Prof: Answer
-        Prof->>Prof: Grade (1-4)
-    end
-
-    Prof->>Dev: MCQ pop quiz (all concepts)
-    Dev->>Prof: Answers
-
-    loop For each concept
-        Prof->>UP: update --concept X --grade N
-        UP->>FSRS: computeNewStability/Difficulty
-        UP-->>Prof: success
-    end
-
-    Prof->>Prof: Write handoff document
-    Prof-->>Dev: Handoff doc path + summary
+    WB->>Dev: Propose 2-3 design options
+    Dev-->>WB: Choose option
+    WB->>SM: session.js update (hld_approved)
+    WB->>WB: Write design document
+    WB->>SM: session.js clear
 ```
 
-### 2. `/backend-architect {feature}` — Design Conversation Flow
+## Sequence: /analyze-architecture
 
 ```mermaid
 sequenceDiagram
     participant Dev as Developer
-    participant BA as backend-architect skill
-    participant Sess as session.js
-    participant Arch as Architecture Docs
-    participant PT as professor-teach skill
-    participant LU as lookup.js
-    participant UP as update.js
-
-    Dev->>BA: /backend-architect "Add notifications"
-    BA->>Arch: Check docs/professor/architecture/
-    BA->>Sess: create(feature, branch)
-
-    Note over BA,Dev: Phase 2: Requirements
-    BA->>Dev: Clarifying questions (1 at a time)
-    Dev->>BA: Answers
-    BA->>Sess: update(phase: "requirements")
-
-    Note over BA,Dev: Phase 3: Architecture Fit
-    BA->>Arch: Read relevant components
-    BA->>Dev: How feature fits existing system
-
-    Note over BA,Dev: Phase 4: Design Options
-    BA->>Dev: Propose 2-3 approaches
-    BA->>LU: status --concepts "message_queue,..."
-    alt Concept gap detected
-        BA->>PT: Teach concept inline
-        PT->>Dev: Explain + question
-        Dev->>PT: Answer
-        PT->>UP: update --grade N
-    end
-    Dev->>BA: Choose option
-    BA->>Sess: update(chosen_option)
-
-    Note over BA,Dev: Phase 5: Finalization
-    BA->>Dev: Present complete design
-    Dev->>BA: Feedback / approve
-
-    Note over BA,Dev: Phase 6: Write Document
-    BA->>BA: Generate design doc
-    BA->>Sess: clear()
-    BA-->>Dev: Design doc path
-```
-
-### 3. `/analyze-architecture` — Architecture Scan Flow
-
-```mermaid
-sequenceDiagram
-    participant Dev as Developer
-    participant AA as analyze-architecture skill
+    participant AA as Analyze-Architecture Skill
     participant FS as File Scanner Agent
     participant DA as Dependency Analyzer Agent
     participant GR as graph.js
-    participant LU as lookup.js
+    participant LK as lookup.js
+    participant CR as Concept Registry
 
     Dev->>AA: /analyze-architecture
-    par Parallel subagents
-        AA->>FS: Scan directory tree, manifests, configs
-        AA->>DA: Analyze imports, dependencies, frameworks
+    par Parallel data gathering
+        AA->>FS: Scan directory tree, manifests, configs, entry points
+        AA->>DA: Analyze imports, deps, external services, frameworks
     end
-    FS-->>AA: Structure data
-    DA-->>AA: Dependency data
+    FS-->>AA: Directory tree + file contents
+    DA-->>AA: Import graph + dependency list
 
-    AA->>AA: Synthesize components from findings
-    AA->>LU: search --query per component
+    AA->>AA: Identify components + relationships
 
     loop For each component
-        AA->>GR: create-component --id X ...
+        AA->>LK: Search concept registry
+        LK->>CR: Match concepts
+        LK-->>AA: Matched concept IDs
+        AA->>GR: create-component
     end
 
     AA->>GR: update-index
-    AA->>AA: Write data-flow.md + tech-stack.md
-    AA-->>Dev: Summary (N components, tech stack)
+    AA->>AA: Write data-flow.md
+    AA->>AA: Write tech-stack.md
+    AA->>AA: Write concept-scope.json
+    AA->>AA: Verify wiki-links + concepts
+    AA-->>Dev: Summary + verification results
 ```

@@ -1,0 +1,22 @@
+{
+  "relevant_domains": ["architecture", "software_construction", "testing"],
+  "tech_stack": ["Node.js", "JavaScript", "Claude Code Plugin System"],
+  "detected_patterns": [
+    "modular_monolith",
+    "domain_driven_design",
+    "repository_pattern",
+    "dependency_injection",
+    "design_patterns",
+    "coupling_cohesion",
+    "unit_testing",
+    "test_driven_development",
+    "build_systems",
+    "dependency_management",
+    "defensive_programming",
+    "static_analysis",
+    "version_control",
+    "documentation"
+  ],
+  "generated_from": "analyze-architecture",
+  "last_updated": "2026-04-10T06:30:00Z"
+}

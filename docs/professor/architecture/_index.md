@@ -4,24 +4,25 @@
 claude-professor
 
 ## Branch
-feat/phase-2-architecture-design
+main
 
 ## Last Updated
-2026-04-06T22:52:19.598Z
+2026-04-10T06:39:01.524Z
 
 ## Summary
-Claude Code plugin implementing an adaptive teaching layer for AI-assisted development. Uses FSRS-5 spaced repetition to track concept mastery, scans codebase architecture, and conducts system design conversations with integrated teaching.
+Claude Code plugin for AI-assisted learning with FSRS-driven spaced repetition. 10 components: skills orchestrate multi-agent design conversations, concept-agent resolves knowledge gaps, FSRS engine tracks mastery, architecture analyzer maps host codebases, and session manager enables resumable whiteboard sessions.
 
 ## Components
 
 | Component | Description | Key Concepts |
 |-----------|-------------|--------------|
-| [[architecture-analyzer]] | Codebase architecture scanning and component graph generation. Dispatches parallel explore subagents, synthesizes findings into interlinked component markdown files with dependency graphs and Mermaid diagrams. | `graph`, `static_analysis`, `design_patterns` |
-| [[concept-registry]] | Static knowledge base of 180+ technical concepts organized across 17 domains with difficulty tiers. Append-only JSON data files serving as ground truth for concept identification. | `graph`, `design_patterns` |
-| [[design-conversation]] | Multi-phase system design conversation skill (backend-architect). Guides developers through requirements, architecture fit, design options, and finalization with integrated concept teaching. Uses session state for resumability. | `state_management`, `design_patterns`, `api_design_principles` |
-| [[fsrs-engine]] | FSRS-5 spaced repetition algorithm. Pure math module computing retrievability, stability, difficulty, and scheduling actions for concept mastery tracking. | `design_patterns` |
-| [[knowledge-agent]] | Solutions architect subagent spawned by the professor skill. Analyzes a development task, identifies up to 25 candidate concepts, fetches mastery status, and returns a structured JSON briefing with teach/review/skip classification. | `design_patterns`, `dependency_injection` |
-| [[plugin-infrastructure]] | Claude Code plugin manifest and configuration. Defines plugin metadata, version, default settings, and local permissions. Bridges between Claude Code's plugin system and the professor's skills/commands/agents. | `design_patterns`, `twelve_factor_app` |
-| [[profile-manager]] | Concept mastery tracking layer. Reads/writes per-concept markdown profile files storing FSRS state, grade history, and notes. Provides search and status APIs via CLI. | `state_management`, `design_patterns` |
-| [[teaching-skills]] | Core teaching and learning skills. The professor skill orchestrates full teach-review-quiz cycles with handoff document generation. The professor-teach skill handles single-concept micro-lessons invoked inline by other skills. | `design_patterns`, `state_management` |
-| [[utilities]] | Shared utility module providing file I/O (JSON and markdown with frontmatter), date math, CLI argument parsing, and atomic write operations used by all scripts. | `file_descriptor` |
+| [[architecture-analyzer]] | Scans the host codebase to produce interlinked architecture markdown files: component index, component files, data-flow diagrams, tech-stack inventory, and concept-scope.json. | `static_analysis`, `documentation`, `build_systems` |
+| [[concept-agent]] | Subagent that resolves concept candidates against the seed registry and user profile, computes FSRS retrieval status for each concept, and optionally creates new L2 concepts. | `dependency_injection`, `repository_pattern` |
+| [[concept-registry]] | 407-concept seed registry spanning 18 technical domains with lookup, search, and reconcile capabilities. Ground truth for concept IDs, aliases, domains, and scope notes. | `repository_pattern`, `domain_driven_design` |
+| [[fsrs-engine]] | Core Free Spaced Repetition Scheduler (FSRS-5) implementation. Computes retrievability, stability, difficulty, and schedules next review intervals for each concept. | `refactoring`, `defensive_programming` |
+| [[plugin-infrastructure]] | Claude Code plugin packaging: marketplace.json for discovery and update detection, plugin.json for metadata, default_config.json for runtime defaults. | `build_systems`, `dependency_management` |
+| [[profile-manager]] | Per-user concept profile store at ~/.claude/professor/concepts/. Holds FSRS review history, stability, and difficulty per concept as markdown files with frontmatter. | `repository_pattern`, `version_control` |
+| [[session-manager]] | Manages whiteboard session state across phases (context loading → requirements → HLD → LLD → deliverable). Persists concepts checked, decisions, chosen option, and supports --continue. | `version_control`, `defensive_programming` |
+| [[skill-engine]] | User-facing skill layer (whiteboard, analyze-architecture, professor-teach, backend-architect). Orchestrates multi-agent design conversations, requirement analysis, and concept teaching flows. | `design_patterns`, `dependency_injection`, `coupling_cohesion` |
+| [[test-suite]] | Comprehensive test coverage for all scripts: FSRS calculations, lookup operations, graph generation, session management, update flows, and v2/v3 migrations. | `debugging`, `code_review` |
+| [[utilities]] | Shared utility functions: JSON read/write, markdown frontmatter parsing, directory management, path expansion, argument parsing, date calculations. | `defensive_programming`, `refactoring` |

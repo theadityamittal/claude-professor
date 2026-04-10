@@ -1,28 +1,26 @@
 # Architecture Analyzer
 
 ## Description
-Codebase architecture scanning and component graph generation. Dispatches parallel explore subagents, synthesizes findings into interlinked component markdown files with dependency graphs and Mermaid diagrams.
+Scans the host codebase to produce interlinked architecture markdown files: component index, component files, data-flow diagrams, tech-stack inventory, and concept-scope.json.
 
 ## Concepts Involved
-- `graph`
 - `static_analysis`
-- `design_patterns`
+- `documentation`
+- `build_systems`
 
 ## Depends On
-- [[utilities]]
 - [[concept-registry]]
 
 ## Depended On By
-- [[design-conversation]]
+- [[skill-engine]]
 
 ## Key Files
-- skills/analyze-architecture/SKILL.md
 - scripts/graph.js
 - scripts/detect-changes.js
-- scripts/test/graph.test.js
+- skills/analyze-architecture/SKILL.md
 
 ## Patterns
-- Parallel subagent dispatch
-- Component graph with bidirectional links
-- Incremental update via detect-changes
-- Mermaid diagram generation
+- incremental update
+- wiki-links
+- Mermaid diagrams
+- detect-changes

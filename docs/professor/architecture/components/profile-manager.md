@@ -1,29 +1,26 @@
 # Profile Manager
 
 ## Description
-Concept mastery tracking layer. Reads/writes per-concept markdown profile files storing FSRS state, grade history, and notes. Provides search and status APIs via CLI.
+Per-user concept profile store at ~/.claude/professor/concepts/. Holds FSRS review history, stability, and difficulty per concept as markdown files with frontmatter.
 
 ## Concepts Involved
-- `state_management`
-- `design_patterns`
+- `repository_pattern`
+- `version_control`
 
 ## Depends On
 - [[fsrs-engine]]
-- [[concept-registry]]
-- [[utilities]]
 
 ## Depended On By
-- [[knowledge-agent]]
-- [[teaching-skills]]
-- [[design-conversation]]
+- [[concept-agent]]
+- [[skill-engine]]
 
 ## Key Files
-- scripts/lookup.js
 - scripts/update.js
-- scripts/test/lookup.test.js
-- scripts/test/update.test.js
+- scripts/utils.js
+- scripts/migrate-v2.js
+- scripts/migrate-v3.js
 
 ## Patterns
-- File-per-concept storage
-- Domain-partitioned directories
-- CLI mode dispatch (search/status/update)
+- file-per-concept
+- frontmatter storage
+- home-dir expansion

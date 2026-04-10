@@ -1,24 +1,21 @@
 # Plugin Infrastructure
 
 ## Description
-Claude Code plugin manifest and configuration. Defines plugin metadata, version, default settings, and local permissions. Bridges between Claude Code's plugin system and the professor's skills/commands/agents.
+Claude Code plugin packaging: marketplace.json for discovery and update detection, plugin.json for metadata, default_config.json for runtime defaults.
 
 ## Concepts Involved
-- `design_patterns`
-- `twelve_factor_app`
+- `build_systems`
+- `dependency_management`
 
 ## Depended On By
-- [[teaching-skills]]
-- [[architecture-analyzer]]
-- [[design-conversation]]
+- [[skill-engine]]
 
 ## Key Files
-- .claude-plugin/plugin.json
 - .claude-plugin/marketplace.json
+- .claude-plugin/plugin.json
 - config/default_config.json
-- .claude/settings.local.json
 
 ## Patterns
-- Plugin manifest pattern
-- Default configuration with override
-- Permission allowlisting
+- plugin manifest
+- version detection
+- config defaults

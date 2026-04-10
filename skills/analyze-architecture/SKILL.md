@@ -60,11 +60,12 @@ Dispatch an Explore subagent with this exact prompt:
 >
 > **Step 1:** Read `docs/professor/architecture/.build/scan-manifest.json`.
 >
-> **Step 2:** Selectively read files with `type` of `manifest` and `config` (all of them), plus up to 10 `source` files that appear to be entry points, public APIs, or route handlers (prioritize files whose `description` or `path` suggests they are the primary interface of a module).
+> **Step 2:** Selectively read files with `type` of `manifest` and `config` (all of them), plus up to 10 `source` files that appear to be entry points, public APIs, or route handlers (prioritize files named `main.*`, `app.*`, `index.*`, `router.*`, `handler.*`, or `server.*`; or files that are imported by 5 or more other files based on path frequency in the manifest).
 >
 > **Step 3:** Identify 5–15 logical components. A component is a unit with a clear responsibility. Use directory groupings, import patterns, and file descriptions as signals.
 >
 > **Step 4:** For each component, search for relevant concept IDs:
+> Determine the search query from the component's purpose: if the component handles HTTP routing, search "routing"; if it connects to a database, search "database connection" or the specific DB name; if it manages caching, search "caching". Run one search per component.
 > ```bash
 > node ${CLAUDE_PLUGIN_ROOT}/scripts/lookup.js search \
 >   --query "{technology or pattern name}" \
@@ -111,6 +112,7 @@ Dispatch an Explore subagent with this exact prompt:
 > - Source ALL versions from scan manifest files (package.json, go.mod, etc.) — never guess
 >
 > **Step 4:** Detect tech stack from manifest files. Then run concept searches and write `docs/professor/architecture/concept-scope.json`:
+> Determine queries from the detected tech stack: search for each major technology name (e.g., "redis", "fastapi", "react") and each architectural pattern observed (e.g., "event sourcing", "cqrs"). Run one search per technology or pattern.
 > ```bash
 > node ${CLAUDE_PLUGIN_ROOT}/scripts/lookup.js search \
 >   --query "{technology or pattern}" \
@@ -147,10 +149,12 @@ Dispatch an Explore subagent with this exact prompt:
 >   --summary "{2-3 sentence description}"
 > ```
 >
-> **Step 6:** Output ONLY this JSON:
-> `{"files_written": 4}`
+> **Step 6:** Count the files you actually wrote (data-flow.md, tech-stack.md, concept-scope.json, and the updated index each count as 1). Output ONLY this JSON:
+> `{"files_written": <count of files actually written>}`
 
-Wait for the subagent to return. Continue to Stage 4.
+Wait for the subagent to return. Parse its JSON output.
+- If `files_written` is 0 or missing: report failure and stop.
+- If successful: continue to Stage 4.
 
 ## Stage 4: Verify
 
@@ -174,7 +178,9 @@ Dispatch an Explore subagent with this exact prompt:
 > **Step 4:** Output ONLY this JSON:
 > `{"broken_links": <count>, "missing_concepts": ["concept_id_1", ...], "components_verified": <count>}`
 
-Wait for the subagent to return.
+Wait for the subagent to return. Parse its JSON output.
+- If the output cannot be parsed: treat as `{"broken_links": 0, "missing_concepts": [], "components_verified": 0}` and continue.
+- If successful: proceed to Cleanup.
 
 ## Cleanup
 

@@ -1,15 +1,19 @@
 # Session State
 
 ## Description
-Learning session lifecycle management with requirements, decisions, and context tracking
+Manages teaching session lifecycle, phases, and concept tracking with session state file persistence.
 
 ## Concepts Involved
 - `session_management`
 - `configuration_management`
-- `state_management`
 
 ## Depends On
 - [[shared-utilities]]
+- [[concept-lookup]]
+
+## Depended On By
+- [[teaching-gate]]
+- [[concept-updater]]
 
 ## Key Files
 - scripts/session.js

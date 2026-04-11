@@ -1,170 +1,181 @@
-# Data Flow Architecture
+# Data Flow & Architecture
 
 ## Component Dependency Graph
 
 ```mermaid
 graph LR
-    SharedUtilities["Shared Utilities<br/>utils.js"]
-    ConceptRegistry["Concept Registry<br/>concepts_registry.json"]
-    DomainTaxonomy["Domain Taxonomy<br/>domains.json"]
+    AppConfig["application-config"]
+    ArchSkill["architecture-analysis-skill"]
+    ArchGraph["architecture-graph"]
+    ConceptLookup["concept-lookup"]
+    ConceptReg["concept-registry"]
+    ConceptUpdate["concept-updater"]
+    DataMig["data-migration"]
+    DomainTax["domain-taxonomy"]
+    FSRSScheduler["fsrs-scheduler"]
+    GitChange["git-change-detection"]
+    SessionState["session-state"]
+    SharedUtils["shared-utilities"]
+    TeachingGate["teaching-gate"]
+    TeachingSkills["teaching-skills"]
+    TestSuite["test-suite"]
     
-    SharedUtilities --> ConceptRegistry
-    SharedUtilities --> DomainTaxonomy
+    ProfileDir[["(profile)/<br/>domain/<br/>concept.md"]]
+    ConceptFile[["data/concepts_<br/>registry.json"]]
+    DomainFile[["data/domains.json"]]
+    SessionFile[["session.json"]]
+    ArchDir[["docs/professor/<br/>architecture/"]]
     
-    ConceptLookup["Concept Lookup<br/>lookup.js"]
-    ConceptLookup --> SharedUtilities
-    ConceptLookup --> ConceptRegistry
+    AppConfig --> ConceptLookup
+    AppConfig --> SessionState
     
-    FsrsScheduler["FSRS Scheduler<br/>fsrs.js"]
-    FsrsScheduler --> SharedUtilities
+    ArchSkill --> ArchGraph
+    ArchSkill --> ConceptLookup
     
-    ConceptUpdater["Concept Updater<br/>update.js"]
-    ConceptUpdater --> FsrsScheduler
-    ConceptUpdater --> SharedUtilities
-    ConceptUpdater --> ConceptRegistry
+    ArchGraph --> SharedUtils
+    ArchGraph --> ArchDir
+    GitChange --> ArchGraph
     
-    DataMigration["Data Migration<br/>migrate-v2.js, migrate-v3.js"]
-    DataMigration --> SharedUtilities
+    ConceptReg --> ConceptFile
+    ConceptReg --> ConceptLookup
+    DomainTax --> DomainFile
+    DomainTax --> ConceptLookup
     
-    ArchitectureGraph["Architecture Graph<br/>graph.js"]
-    ArchitectureGraph --> SharedUtilities
-    ArchitectureGraph --> DomainTaxonomy
+    ConceptLookup --> FSRSScheduler
+    ConceptLookup --> ConceptReg
     
-    GitChangeDetection["Git Change Detection<br/>detect-changes.js"]
-    GitChangeDetection --> ArchitectureGraph
-    GitChangeDetection --> SharedUtilities
+    FSRSScheduler --> ProfileDir
+    ConceptUpdate --> FSRSScheduler
+    ConceptUpdate --> SharedUtils
+    ConceptUpdate --> ProfileDir
     
-    ArchitectureAnalysisSkill["Architecture Analysis Skill<br/>analyze-architecture"]
-    ArchitectureAnalysisSkill --> ArchitectureGraph
-    ArchitectureAnalysisSkill --> ConceptLookup
+    DataMig --> SharedUtils
     
-    SessionState["Session State<br/>session.js"]
-    SessionState --> SharedUtilities
+    SessionState --> SharedUtils
+    SessionState --> ConceptLookup
+    SessionState --> SessionFile
     
-    TeachingSkills["Teaching Skills<br/>professor, professor-teach"]
+    TeachingGate --> SessionState
+    TeachingGate --> ConceptLookup
+    TeachingGate --> FSRSScheduler
+    
     TeachingSkills --> ConceptLookup
     TeachingSkills --> SessionState
     
-    ApplicationConfig["Application Config<br/>default_config.json"]
-    ApplicationConfig --> SharedUtilities
-    
-    TestSuite["Test Suite<br/>test/"]
-    TestSuite --> ArchitectureGraph
-    TestSuite --> ConceptLookup
-    TestSuite --> FsrsScheduler
-    TestSuite --> ConceptUpdater
-    TestSuite --> SessionState
-    TestSuite --> DataMigration
-    
-    style SharedUtilities fill:#e1f5ff
-    style ConceptRegistry fill:#f3e5f5
-    style DomainTaxonomy fill:#f3e5f5
-    style ConceptLookup fill:#fff3e0
-    style FsrsScheduler fill:#e8f5e9
-    style ConceptUpdater fill:#e8f5e9
-    style DataMigration fill:#fce4ec
-    style ArchitectureGraph fill:#fff3e0
-    style GitChangeDetection fill:#f1f8e9
-    style ArchitectureAnalysisSkill fill:#fff3e0
-    style SessionState fill:#e0f2f1
-    style TeachingSkills fill:#f1f8e9
-    style ApplicationConfig fill:#ede7f6
-    style TestSuite fill:#e0e0e0
+    TestSuite -.-> FSRSScheduler
+    TestSuite -.-> ConceptLookup
+    TestSuite -.-> SessionState
+    TestSuite -.-> TeachingGate
+    TestSuite -.-> ConceptUpdate
+    TestSuite -.-> ArchGraph
+    TestSuite -.-> DataMig
 ```
 
-## Request Flow: Learning Session Initialization
+## Key Request Flows
+
+### Flow 1: Concept Search & Scheduling
+
+**Trigger**: `/whiteboard` or `/professor-teach` initiates concept resolution
 
 ```mermaid
 sequenceDiagram
     participant User
-    participant TeachingSkill as Teaching Skills<br/>professor-teach
-    participant SessionMgr as Session State
-    participant ConceptLookup as Concept Lookup
-    participant ConceptRegistry as [(Concept Registry)]
-    participant FsrsScheduler as FSRS Scheduler
+    participant SessionState
+    participant ConceptLookup
+    participant FSRSScheduler
+    participant ConceptReg
+    participant ProfileDir as Profile<br/>(profile/)
     
-    User->>TeachingSkill: Initialize teaching session
-    TeachingSkill->>SessionMgr: Create session context
-    SessionMgr->>SessionMgr: Initialize state, requirements, decisions
-    
-    TeachingSkill->>ConceptLookup: Search concept by ID
-    ConceptLookup->>ConceptRegistry: Query concept registry
-    ConceptRegistry-->>ConceptLookup: Return concept metadata
-    ConceptLookup-->>TeachingSkill: Return concept + aliases
-    
-    TeachingSkill->>FsrsScheduler: Compute retrievability
-    FsrsScheduler->>FsrsScheduler: Calculate FSRS metrics
-    FsrsScheduler-->>TeachingSkill: Return difficulty, stability, ease
-    
-    TeachingSkill->>SessionMgr: Update session with concept state
-    SessionMgr-->>TeachingSkill: Confirm session updated
-    
-    TeachingSkill-->>User: Begin teaching interaction
+    User->>SessionState: Load or create session
+    SessionState->>ProfileDir: Read session.json
+    User->>ConceptLookup: search(query, domain)
+    ConceptLookup->>ConceptReg: Load concepts_registry.json
+    ConceptLookup->>FSRSScheduler: computeRetrievability()
+    FSRSScheduler->>ProfileDir: Check concept/domain/id.md
+    FSRSScheduler-->>ConceptLookup: Return retrievability score
+    ConceptLookup-->>SessionState: Return matched concepts + status
+    SessionState->>ProfileDir: Update session.json with schedule
 ```
 
-## Request Flow: Concept Update and FSRS Calculation
+### Flow 2: Architecture Analysis & Detection
+
+**Trigger**: `/analyze-architecture` scans codebase
 
 ```mermaid
 sequenceDiagram
     participant User
-    participant ConceptUpdater as Concept Updater<br/>update.js
-    participant ConceptLookup as Concept Lookup
-    participant FsrsScheduler as FSRS Scheduler
-    participant ConceptRegistry as [(Concept Registry)]
-    participant DomainTaxonomy as [(Domain Taxonomy)]
+    participant ArchGraph
+    participant GitChange
+    participant SharedUtils
+    participant ArchDir as docs/professor/<br/>architecture/
     
-    User->>ConceptUpdater: Submit review grade (1-4)
-    ConceptUpdater->>ConceptLookup: Resolve concept alias
-    ConceptLookup->>ConceptRegistry: Lookup concept by ID or alias
-    ConceptRegistry-->>ConceptLookup: Return full concept
-    ConceptLookup-->>ConceptUpdater: Return concept + metadata
-    
-    ConceptUpdater->>FsrsScheduler: Calculate FSRS metrics
-    FsrsScheduler->>FsrsScheduler: Apply SM-2 algorithm to grade
-    FsrsScheduler-->>ConceptUpdater: Return updated difficulty, stability, ease
-    
-    ConceptUpdater->>ConceptUpdater: Merge metrics into concept
-    ConceptUpdater->>ConceptRegistry: Persist updated concept
-    ConceptRegistry-->>ConceptUpdater: Confirm write
-    
-    ConceptUpdater-->>User: Return updated concept state
-```
-
-## Request Flow: Architecture Analysis and Indexing
-
-```mermaid
-sequenceDiagram
-    participant User
-    participant AnalysisSkill as Architecture Analysis<br/>analyze-architecture
-    participant ArchGraph as Architecture Graph<br/>graph.js
-    participant GitDetect as Git Change Detection
-    participant ConceptLookup as Concept Lookup
-    participant SharedUtils as Shared Utilities
-    participant ComponentFiles as [(Component<br/>Markdown Files)]
-    participant ConceptRegistry as [(Concept Registry)]
-    participant IndexFile as [(Index File<br/>_index.md)]
-    
-    User->>AnalysisSkill: Scan codebase architecture
-    AnalysisSkill->>ArchGraph: create-index command
-    ArchGraph->>SharedUtils: Scan component directory
-    SharedUtils->>ComponentFiles: Read all .md files
-    ComponentFiles-->>SharedUtils: Return component metadata
-    SharedUtils-->>ArchGraph: Return parsed components
-    
-    ArchGraph->>GitDetect: Detect architectural changes
-    GitDetect->>SharedUtils: Parse git diff
-    SharedUtils-->>GitDetect: Return file changes
-    GitDetect-->>ArchGraph: Return affected components
-    
-    ArchGraph->>ConceptLookup: Reconcile tech stack concepts
-    ConceptLookup->>ConceptRegistry: Search detected technologies
-    ConceptRegistry-->>ConceptLookup: Return matched concepts
-    ConceptLookup-->>ArchGraph: Return concept IDs
-    
+    User->>ArchGraph: Scan codebase with --update flag
+    ArchGraph->>SharedUtils: listMarkdownFiles(cwd)
+    SharedUtils->>ArchGraph: Return file list + manifest
     ArchGraph->>ArchGraph: Build dependency graph
-    ArchGraph->>IndexFile: Write index.md
-    IndexFile-->>ArchGraph: Confirm write
-    
-    ArchGraph-->>AnalysisSkill: Return index with metadata
-    AnalysisSkill-->>User: Present architecture overview
+    ArchGraph->>ArchDir: Write components/*.md
+    ArchGraph->>ArchDir: Write data-flow.md, tech-stack.md
+    GitChange->>ArchGraph: detect-changes (post-git hook)
+    ArchGraph-->>User: Report architectural changes
 ```
+
+### Flow 3: Teaching Gate & Session Progression
+
+**Trigger**: Session checkpoint requires concept verification
+
+```mermaid
+sequenceDiagram
+    participant TeachingGate
+    participant SessionState
+    participant ConceptLookup
+    participant FSRSScheduler
+    participant ProfileDir as Profile
+    
+    TeachingGate->>SessionState: Check phase schedule
+    SessionState->>ProfileDir: Load session.json checkpoints
+    TeachingGate->>ConceptLookup: Resolve scheduled concepts
+    ConceptLookup->>FSRSScheduler: computeRetrievability(stability, days)
+    FSRSScheduler->>ProfileDir: Load concept history
+    FSRSScheduler-->>TeachingGate: Return retrievability metric
+    alt Retrievability < threshold
+        TeachingGate-->>SessionState: Block progression, trigger teaching
+    else Retrievability >= threshold
+        TeachingGate-->>SessionState: Gate open, allow continuation
+    end
+    SessionState->>ProfileDir: Update gate status in session.json
+```
+
+## Data Models
+
+### Session State Structure
+
+- **Type**: JSON persisted to `~/.claude-professor/profiles/{project}/session.json`
+- **Contents**:
+  - `sessionId`: UUID for session
+  - `phase`: Current phase (clarify, design_hld, design_lld, conclude)
+  - `checkpoints`: Map of phase → required concepts
+  - `taught`: Set of resolved concept IDs
+  - `gates`: Map of phase → open/closed status
+  - `updatedAt`: ISO timestamp
+
+### Concept Profile Entry
+
+- **Type**: Markdown with YAML frontmatter
+- **Location**: `~/.claude-professor/profiles/{project}/{domain}/{concept_id}.md`
+- **Frontmatter Fields**:
+  - `stability`: FSRS stability metric (float)
+  - `difficulty`: FSRS difficulty rating (1-10)
+  - `reps`: Count of reviews
+  - `lapses`: Count of failed recalls
+  - `lastReview`: ISO timestamp of most recent review
+
+### Architecture Manifest
+
+- **Type**: JSON generated by `architecture-graph`
+- **Location**: `docs/professor/architecture/concept-scope.json`
+- **Contents**:
+  - `relevant_domains`: Inferred domains (e.g., architecture, databases)
+  - `tech_stack`: Detected technologies (Node, FastAPI, React, etc.)
+  - `detected_patterns`: Observed architectural patterns
+  - `generated_from`: Script name or command
+  - `last_updated`: ISO timestamp

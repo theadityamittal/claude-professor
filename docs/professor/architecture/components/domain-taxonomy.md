@@ -1,12 +1,19 @@
 # Domain Taxonomy
 
 ## Description
-Domain definitions and knowledge categorization structure with 18+ domain categories
+Defines 18 knowledge domains (algorithms, architecture, databases, etc.) with descriptions and relationships.
 
 ## Concepts Involved
-- `relational_model`
-- `data_catalog`
-- `design_patterns`
+- `architecture`
+- `domain_driven_design`
+
+## Depended On By
+- [[concept-registry]]
+- [[concept-lookup]]
 
 ## Key Files
-- data/domains/
+- data/domains/algorithms_data_structures.md
+- data/domains/architecture.md
+- data/domains/databases.md
+- data/domains/testing.md
+- data/domains/programming_languages.md

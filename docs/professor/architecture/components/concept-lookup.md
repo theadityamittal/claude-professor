@@ -1,16 +1,17 @@
 # Concept Lookup
 
 ## Description
-Concept registry search, reconciliation, and status checking with alias matching
+Searches concepts by query terms and domains, returns matching concept IDs and status.
 
 ## Concepts Involved
-- `searching_algorithms`
-- `full_text_search`
-- `configuration_management`
+- `architecture`
 
 ## Depends On
-- [[shared-utilities]]
-- [[concept-registry]]
+- [[fsrs-scheduler]]
+
+## Depended On By
+- [[session-state]]
+- [[teaching-gate]]
 
 ## Key Files
 - scripts/lookup.js

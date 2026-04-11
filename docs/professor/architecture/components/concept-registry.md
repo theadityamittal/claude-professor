@@ -1,13 +1,15 @@
 # Concept Registry
 
 ## Description
-Concept seed data with domains, aliases, scope notes, and metadata
+Central registry of concepts across domains with seed data and concept-to-domain mappings.
 
 ## Concepts Involved
-- `relational_model`
-- `data_catalog`
-- `configuration_management`
+- `architecture`
+
+## Depended On By
+- [[concept-lookup]]
 
 ## Key Files
 - data/concepts_registry.json
 - data/domains.json
+- data/preferred_sources.json

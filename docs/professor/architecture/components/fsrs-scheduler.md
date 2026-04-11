@@ -1,15 +1,16 @@
 # Fsrs Scheduler
 
 ## Description
-Free Spaced Repetition System algorithm for review scheduling and retrievability computation
+Implements FSRS spaced repetition algorithm for calculating concept stability, difficulty, and retrievability.
 
 ## Concepts Involved
-- `supervised_learning`
-- `model_evaluation`
-- `reinforcement_learning`
+- `cpu_scheduling`
+- `process_scheduling_policies`
 
-## Depends On
-- [[shared-utilities]]
+## Depended On By
+- [[concept-updater]]
+- [[teaching-gate]]
+- [[concept-lookup]]
 
 ## Key Files
 - scripts/fsrs.js

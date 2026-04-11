@@ -2,45 +2,27 @@
   "relevant_domains": [
     "architecture",
     "software_construction",
-    "testing",
-    "api_design",
-    "algorithms_data_structures",
-    "devops_infrastructure",
-    "security"
+    "testing"
   ],
   "tech_stack": [
-    "Node.js",
-    "JavaScript",
-    "JSON",
-    "Markdown",
-    "Git"
+    "node.js",
+    "javascript",
+    "cli",
+    "json",
+    "markdown",
+    "yaml",
+    "filesystem",
+    "git"
   ],
   "detected_patterns": [
     "design_patterns",
+    "repository_pattern",
     "domain_driven_design",
-    "graphs",
-    "configuration_management",
-    "unit_testing",
-    "integration_testing",
-    "test_driven_development",
-    "session_management",
-    "memory_management",
-    "data_catalog",
-    "relational_model",
-    "schema_migration",
-    "schema_evolution",
-    "data_serialization",
-    "reinforcement_learning",
-    "model_evaluation",
-    "supervised_learning",
-    "full_text_search",
-    "searching_algorithms",
-    "dependency_management",
-    "complexity_management",
-    "prompt_engineering",
-    "artifact_management",
-    "incident_management"
+    "layered_architecture",
+    "event_driven_architecture",
+    "state_machine",
+    "gate_based_flow_control"
   ],
   "generated_from": "analyze-architecture",
-  "last_updated": "2026-04-10T00:00:00Z"
+  "last_updated": "2026-04-11T09:30:00Z"
 }

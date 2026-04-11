@@ -1,16 +1,13 @@
 # Git Change Detection
 
 ## Description
-Git hook for detecting architecture changes after pull or merge events
+Git hook that detects architecture changes after git operations and warns when base branch is affected.
 
 ## Concepts Involved
-- `design_patterns`
-- `incident_management`
-- `artifact_management`
+- `version_control`
 
 ## Depends On
 - [[architecture-graph]]
-- [[shared-utilities]]
 
 ## Key Files
 - scripts/detect-changes.js

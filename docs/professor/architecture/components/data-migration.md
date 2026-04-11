@@ -1,12 +1,11 @@
 # Data Migration
 
 ## Description
-v2 to v3 concept format migration with schema evolution and domain remapping
+Handles schema migrations from v2-v4 formats, domain remapping, and field enrichment.
 
 ## Concepts Involved
-- `schema_migration`
 - `schema_evolution`
-- `data_serialization`
+- `schema_migration`
 
 ## Depends On
 - [[shared-utilities]]
@@ -14,3 +13,4 @@ v2 to v3 concept format migration with schema evolution and domain remapping
 ## Key Files
 - scripts/migrate-v2.js
 - scripts/migrate-v3.js
+- scripts/migrate-v4.js

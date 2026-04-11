@@ -1,15 +1,18 @@
 # Architecture Graph
 
 ## Description
-Component creation, indexing, and architectural change detection system
+Scans codebase, detects architectural changes, and generates component graph and analysis manifests.
 
 ## Concepts Involved
-- `graphs`
-- `design_patterns`
+- `complexity_analysis`
+- `layered_architecture`
 - `domain_driven_design`
 
 ## Depends On
 - [[shared-utilities]]
+
+## Depended On By
+- [[git-change-detection]]
 
 ## Key Files
 - scripts/graph.js

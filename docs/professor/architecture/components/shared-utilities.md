@@ -1,12 +1,16 @@
 # Shared Utilities
 
 ## Description
-Shared utilities for JSON/markdown I/O, filesystem operations, and CLI argument parsing
+Core utilities for JSON I/O, markdown parsing, CLI argument handling, and file operations.
 
 ## Concepts Involved
-- `complexity_management`
-- `dependency_management`
-- `design_patterns`
+- `file_systems`
+
+## Depended On By
+- [[session-state]]
+- [[concept-updater]]
+- [[architecture-graph]]
+- [[data-migration]]
 
 ## Key Files
 - scripts/utils.js

@@ -1,16 +1,17 @@
 # Concept Updater
 
 ## Description
-Update concept FSRS metrics, difficulty, stability, and metadata with review grades
+Persists concept review feedback, updates FSRS parameters, and manages concept markdown frontmatter.
 
 ## Concepts Involved
-- `model_evaluation`
-- `memory_management`
-- `dependency_management`
+- `file_systems`
 
 ## Depends On
 - [[fsrs-scheduler]]
 - [[shared-utilities]]
+
+## Depended On By
+- [[session-state]]
 
 ## Key Files
 - scripts/update.js

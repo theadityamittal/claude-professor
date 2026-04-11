@@ -5,11 +5,12 @@ description: >
   stored as interlinked markdown files. Use when starting a new project
   analysis or when the architecture may have changed significantly.
 disable-model-invocation: true
-argument-hint: "[--update] [--branch name]"
+argument-hint: "[--update] [--branch name] [--budget N]"
 model: sonnet
 inputs:
   - update: "boolean, optional — refresh existing architecture"
   - branch: "string, optional — compare branch against stored base"
+  - budget: "integer, optional — max files in scan manifest (default: 100)"
 outputs:
   - architecture_docs: "docs/professor/architecture/"
   - concept_scope: "docs/professor/architecture/concept-scope.json"
@@ -27,6 +28,7 @@ Read `$ARGUMENTS` for flags:
 - No flags: full analysis from scratch
 - `--update`: refresh existing architecture (re-scan, update changed, preserve unchanged)
 - `--branch {name}`: generate a delta file comparing the specified branch against the stored base architecture
+- `--budget {N}`: max files in scan manifest (default: 100). Increase for large codebases (e.g., `--budget 300`). Files are prioritized: manifests > configs > source > tests > docs.
 
 ## Setup
 
@@ -42,9 +44,9 @@ Dispatch an Explore subagent with this exact prompt:
 
 > You are a codebase scanner. Your job is to produce a scan manifest and write it to disk. Do not explain your work — just execute.
 >
-> **Step 1:** Run the scan script:
+> **Step 1:** Run the scan script (use the `--budget` value from arguments, or 100 if not specified):
 > ```bash
-> node ${CLAUDE_PLUGIN_ROOT}/scripts/graph.js scan --dir . --budget 100
+> node ${CLAUDE_PLUGIN_ROOT}/scripts/graph.js scan --dir . --budget {budget}
 > ```
 >
 > The script returns JSON wrapped in `{status, data, error}` envelope format. Parse the `data` field for results.

@@ -19,7 +19,7 @@ function update(options) {
     isRegistryConcept, isSeedConcept, difficultyTier,
     profileDir, documentationUrl, notes,
     level, parentConcept, aliases, scopeNote, relatedConcepts,
-    createParent, addAlias, body,
+    createParent, addAlias, body, nonce,
   } = options;
 
   ensureDir(profileDir);
@@ -91,6 +91,18 @@ function update(options) {
     };
   }
 
+  // --- nonce idempotency check (grade path only) ---
+  if (nonce !== undefined && existing) {
+    if (existing.frontmatter.operation_nonce === nonce) {
+      return {
+        success: true,
+        concept_id: concept,
+        domain,
+        action: 'idempotent_skip',
+      };
+    }
+  }
+
   // --- grade-based create / update path ---
   const gradeNum = parseInt(grade, 10);
   if (![1, 2, 3, 4].includes(gradeNum)) {
@@ -104,6 +116,8 @@ function update(options) {
     const frontmatter = {
       concept_id: concept,
       domain,
+      schema_version: 4,
+      operation_nonce: nonce || null,
       level: level !== undefined ? parseInt(level, 10) : 1,
       parent_concept: parentConcept || null,
       is_seed_concept: isSeedConcept === true || isSeedConcept === 'true',
@@ -144,6 +158,8 @@ function update(options) {
 
   const updatedFrontmatter = {
     ...entry,
+    schema_version: entry.schema_version || 4,
+    operation_nonce: nonce || entry.operation_nonce || null,
     last_reviewed: now,
     review_history: [...entry.review_history, { date: now, grade: gradeNum }],
     fsrs_stability: Math.round(newStability * 10000) / 10000,
@@ -208,6 +224,7 @@ if (require.main === module) {
       createParent: isCreateParent,
       addAlias: args['add-alias'],
       body: args.body,
+      nonce: args.nonce,
     });
     process.stdout.write(JSON.stringify(result, null, 2) + '\n');
   } catch (err) {

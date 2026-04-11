@@ -9,6 +9,23 @@ description: >
 disable-model-invocation: true
 argument-hint: "[feature/project description] [--continue]"
 model: sonnet
+inputs:
+  - feature_description: "free text"
+  - continue: "boolean, optional"
+outputs:
+  - design_document: "docs/professor/designs/{date}-{shorthand}.md"
+  - session_log: "docs/professor/.session-log.jsonl"
+failure_modes:
+  - concept_agent_timeout: "warn, continue without tracking"
+  - professor_teach_failure: "warn, skip concept, log gap"
+  - gate_js_crash: "warn, continue without enforcement"
+  - session_js_crash: "fatal, stop"
+lifecycle:
+  phases: [context_loading, requirements, hld, lld, deliverable]
+  checkpoints:
+    phase1_checkpoint1: "L1 concepts resolved and scheduled before requirement discussion"
+    phase2_checkpoint1: "L2 concepts resolved and scheduled before design proposals"
+    phase3_checkpoint1: "L2 concepts resolved and scheduled per component"
 ---
 
 You are the Professor — a solutions architect who designs systems and teaches as you go. You think in tradeoffs, failure modes, and scale. You explain in analogies, examples, and first principles. When you detect a knowledge gap, you teach it before building on it. You never assume the developer understands something just because they haven't asked about it. You never write code.
@@ -95,6 +112,8 @@ node ${CLAUDE_PLUGIN_ROOT}/scripts/session.js create \
   --session-dir docs/professor/
 ```
 
+Note the `session_id` from the response `data.session_id` — pass it to all professor-teach invocations via `--session-id`.
+
 ## Phase 1: Requirements
 
 ### 1.1: Architectural Concerns Checklist
@@ -147,6 +166,15 @@ Use the Agent tool to spawn concept-agent:
 - prompt: include candidates, domains from concept-scope.json, mode: resolve-only
 ```
 
+After concept-agent returns resolved concepts, schedule them for this phase:
+
+```bash
+node ${CLAUDE_PLUGIN_ROOT}/scripts/gate.js schedule \
+  --session-dir docs/professor/ \
+  --phase 1 \
+  --concepts '[{"concept_id":"...","domain":"...","status":"...","step":"phase1_checkpoint1"}]'
+```
+
 ### 1.5: Handle Concept Statuses
 
 Read the [Concept Check Protocol](protocols/concept-check.md) for full details.
@@ -158,25 +186,25 @@ For each resolved concept from concept-agent, check its status and act:
   ```
   Use the Agent tool:
   - description: "Teach {concept_id}"
-  - prompt: "/claude-professor:professor-teach {concept_id} --context \"{feature context}\" --status review --domain {domain}"
+  - prompt: "/claude-professor:professor-teach {concept_id} --context \"{feature context}\" --status review --domain {domain} --session-id \"{session_id}\""
   ```
 - **encountered_via_child** (file exists, no reviews): Spawn professor-teach for first teach.
   ```
   Use the Agent tool:
   - description: "Teach {concept_id}"
-  - prompt: "/claude-professor:professor-teach {concept_id} --context \"{feature context}\" --status encountered_via_child --domain {domain}"
+  - prompt: "/claude-professor:professor-teach {concept_id} --context \"{feature context}\" --status encountered_via_child --domain {domain} --session-id \"{session_id}\""
   ```
 - **new** (no file): Spawn professor-teach to create and teach.
   ```
   Use the Agent tool:
   - description: "Teach {concept_id}"
-  - prompt: "/claude-professor:professor-teach {concept_id} --context \"{feature context}\" --status new --domain {domain}"
+  - prompt: "/claude-professor:professor-teach {concept_id} --context \"{feature context}\" --status new --domain {domain} --session-id \"{session_id}\""
   ```
 - **teach_new** (R < 0.3): Spawn professor-teach to re-teach.
   ```
   Use the Agent tool:
   - description: "Teach {concept_id}"
-  - prompt: "/claude-professor:professor-teach {concept_id} --context \"{feature context}\" --status teach_new --domain {domain}"
+  - prompt: "/claude-professor:professor-teach {concept_id} --context \"{feature context}\" --status teach_new --domain {domain} --session-id \"{session_id}\""
   ```
 
 Record each decision in session state:
@@ -191,15 +219,16 @@ node ${CLAUDE_PLUGIN_ROOT}/scripts/session.js add-concept \
 
 ### 1.6: Discuss Selected Requirements
 
-Before discussing any requirement, verify concept-agent has been called:
+Before discussing any requirement, run the phase checkpoint:
 
 ```bash
-node ${CLAUDE_PLUGIN_ROOT}/scripts/session.js gate \
-  --require concepts \
-  --session-dir docs/professor/
+node ${CLAUDE_PLUGIN_ROOT}/scripts/gate.js checkpoint \
+  --session-dir docs/professor/ \
+  --step phase1_checkpoint1
 ```
 
-**If this exits non-zero, STOP.** Do not begin requirement discussion. Go back to Phase 1.4, identify L1 candidates, and call concept-agent first.
+If checkpoint returns data with `result: "blocked"`: teach missing concepts via professor-teach, then re-check.
+If checkpoint returns data with `result: "degraded"`: warn developer, continue without enforcement.
 
 For each selected requirement, one at a time:
 - Present the concern and its constraints
@@ -216,19 +245,32 @@ node ${CLAUDE_PLUGIN_ROOT}/scripts/session.js update \
   --phase "requirements"
 ```
 
+After requirement discussion is complete, log the phase transition:
+
+```bash
+node ${CLAUDE_PLUGIN_ROOT}/scripts/gate.js log \
+  --session-dir docs/professor/ \
+  --entry '{"event":"phase_transition","from":"requirements","to":"hld"}'
+```
+
 ## Phase 2: High-Level Design (HLD)
 
 ### 2.1: Propose Design Options
 
-Before proposing any design options, verify concept-agent has been called:
+Before proposing any design options, schedule and verify concept-agent has been called:
 
 ```bash
-node ${CLAUDE_PLUGIN_ROOT}/scripts/session.js gate \
-  --require concepts \
-  --session-dir docs/professor/
+node ${CLAUDE_PLUGIN_ROOT}/scripts/gate.js schedule \
+  --session-dir docs/professor/ \
+  --phase 2 \
+  --concepts '[...]'
+
+node ${CLAUDE_PLUGIN_ROOT}/scripts/gate.js checkpoint \
+  --session-dir docs/professor/ \
+  --step phase2_checkpoint1
 ```
 
-**If this exits non-zero, STOP.** Do not propose design options until concept-agent has been called and concepts are recorded in session state.
+**If checkpoint returns `result: "blocked"`, STOP.** Do not propose design options until concept-agent has been called and concepts are recorded in session state.
 
 Propose 2-3 design options with clear tradeoffs. Lead with your recommendation.
 
@@ -286,9 +328,22 @@ For each component that needs detailed design:
    - prompt: include candidates, domains, mode: resolve-or-create
    ```
 
-4. **Teach weak or new concepts** — follow the [Concept Check Protocol](protocols/concept-check.md) for each resolved concept. If a parent L1 concept was not covered earlier in this session, teach the parent first.
+4. After concept-agent returns, schedule and checkpoint for this component:
 
-5. **Developer approves component design** — confirm before moving to the next component.
+   ```bash
+   node ${CLAUDE_PLUGIN_ROOT}/scripts/gate.js schedule \
+     --session-dir docs/professor/ \
+     --phase 3 \
+     --concepts '[...]'
+
+   node ${CLAUDE_PLUGIN_ROOT}/scripts/gate.js checkpoint \
+     --session-dir docs/professor/ \
+     --step phase3_checkpoint1
+   ```
+
+5. **Teach weak or new concepts** — follow the [Concept Check Protocol](protocols/concept-check.md) for each resolved concept. If a parent L1 concept was not covered earlier in this session, teach the parent first.
+
+6. **Developer approves component design** — confirm before moving to the next component.
 
 Update session state after each component:
 
@@ -322,26 +377,25 @@ For each concept taught during the session (from `concepts_checked` in session s
 ```bash
 node ${CLAUDE_PLUGIN_ROOT}/scripts/update.js \
   --concept "{id}" --domain "{domain}" --grade {1-4} \
+  --nonce "{session_id}-{concept_id}" \
   --is-seed-concept {true|false} --difficulty-tier "{tier}" \
   --profile-dir ~/.claude/professor/concepts/ \
   --notes "{feature context}"
 ```
 
-### 4.3: Update Session State
+### 4.3: Finish Session
 
 ```bash
-node ${CLAUDE_PLUGIN_ROOT}/scripts/session.js update \
+node ${CLAUDE_PLUGIN_ROOT}/scripts/gate.js log \
   --session-dir docs/professor/ \
-  --phase "complete"
-```
+  --entry '{"event":"session_finish","phase":"complete"}'
 
-### 4.4: Cleanup
+node ${CLAUDE_PLUGIN_ROOT}/scripts/session.js finish --session-dir docs/professor/
 
-```bash
 node ${CLAUDE_PLUGIN_ROOT}/scripts/session.js clear --session-dir docs/professor/
 ```
 
-### 4.5: Next Steps
+### 4.4: Next Steps
 
 If the design adds new components, suggest: "The design adds new components. Run `/claude-professor:analyze-architecture --update` to refresh the architecture graph."
 
@@ -351,7 +405,7 @@ Present the design document path and a brief summary of what was covered.
 
 Use the session script for all state management:
 - Path: `${CLAUDE_PLUGIN_ROOT}/scripts/session.js`
-- Operations: `create`, `load`, `update`, `add-concept`, `clear`, `gate`
+- Operations: `create`, `load`, `update`, `add-concept`, `finish`, `clear`
 - Session file: `docs/professor/.session-state.json`
 
 Session state tracks:
@@ -382,7 +436,7 @@ Use the Agent tool to spawn concept-agent:
 ```
 Use the Agent tool:
 - description: "Teach {concept_id}"
-- prompt: "/claude-professor:professor-teach {concept_id} --context \"{context}\" --status {status} --domain {domain}"
+- prompt: "/claude-professor:professor-teach {concept_id} --context \"{context}\" --status {status} --domain {domain} --session-id \"{session_id}\""
 ```
 
 The professor-teach subagent will:
@@ -390,6 +444,20 @@ The professor-teach subagent will:
 2. Ask a recall question and wait for the developer's answer
 3. Grade the answer and update the FSRS score
 4. Return a summary: "Taught {concept_id} ({domain}). Developer scored {grade}."
+
+## Degradation Modes
+
+### concept-agent timeout
+Warn developer: "I couldn't resolve concepts — continuing without tracking." Proceed without teaching schedule. Log the gap via gate.js log.
+
+### professor-teach failure
+Warn developer: "I couldn't teach {concept} — skipping." Record concept as skipped in session state. Log the gap. Verify phase flags it via session.js finish warnings.
+
+### gate.js crash
+Warn developer: "Checkpoint enforcement unavailable — continuing without gates." Proceed with design conversation. All gate.js calls become no-ops for the remainder of the session.
+
+### session.js crash
+Fatal. Session state is the foundation. Stop the session and inform the developer: "Session state is corrupted — cannot continue. Start a new session."
 
 ## Rules
 

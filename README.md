@@ -382,16 +382,6 @@ Contributions welcome, especially to the seed concept registry.
 
 Domains are append-only. Open an issue to discuss before adding. New domains must be permanent SWE knowledge categories backed by academic/industry consensus.
 
-## Deprecated Skills
-
-These skills from Phase 1/2 are superseded by `/whiteboard`:
-- `/professor` — batch upfront teaching (replaced by lazy teaching in `/whiteboard`)
-- `/backend-architect` — backend-only design conversation (replaced by domain-agnostic `/whiteboard`)
-
-The `knowledge-agent` is replaced by `concept-agent`.
-
-These deprecated skills are not compatible with v4 envelope format.
-
 ## License
 
 MIT

@@ -24,7 +24,7 @@ fi
 # Test 2: graph.js scan command exists and returns valid JSON
 echo "Test 2: scan command returns valid JSON..."
 SCAN_OUTPUT=$(node "$PLUGIN_DIR/scripts/graph.js" scan --dir "$PLUGIN_DIR" --budget 50 2>/dev/null)
-if echo "$SCAN_OUTPUT" | node -e "const d=JSON.parse(require('fs').readFileSync('/dev/stdin','utf8')); process.exit(d.files&&Array.isArray(d.files)?0:1)" 2>/dev/null; then
+if echo "$SCAN_OUTPUT" | node -e "const d=JSON.parse(require('fs').readFileSync('/dev/stdin','utf8')).data; process.exit(d.files&&Array.isArray(d.files)?0:1)" 2>/dev/null; then
   pass "scan command returns valid JSON with files array"
 else
   fail "scan command returned invalid JSON"
@@ -42,7 +42,7 @@ fi
 # Test 4: scan excludes node_modules and .git
 echo "Test 4: scan excludes excluded dirs..."
 EXCLUDED=$(node "$PLUGIN_DIR/scripts/graph.js" scan --dir "$PLUGIN_DIR" --budget 200 2>/dev/null | \
-  node -e "const d=JSON.parse(require('fs').readFileSync('/dev/stdin','utf8')); \
+  node -e "const d=JSON.parse(require('fs').readFileSync('/dev/stdin','utf8')).data; \
     const bad=d.files.filter(f=>f.path.includes('node_modules')||f.path.includes('.git/')); \
     console.log(bad.length)")
 if [ "$EXCLUDED" -eq 0 ]; then
@@ -54,7 +54,7 @@ fi
 # Test 5: scan prioritizes manifests (package.json should appear before .js source files)
 echo "Test 5: manifest priority in scan output..."
 MANIFEST_FIRST=$(node "$PLUGIN_DIR/scripts/graph.js" scan --dir "$PLUGIN_DIR" --budget 5 2>/dev/null | \
-  node -e "const d=JSON.parse(require('fs').readFileSync('/dev/stdin','utf8')); \
+  node -e "const d=JSON.parse(require('fs').readFileSync('/dev/stdin','utf8')).data; \
     const types=d.files.map(f=>f.type); \
     const firstSrc=types.indexOf('source'); \
     const firstMani=types.indexOf('manifest'); \
@@ -72,7 +72,7 @@ SEARCH_OUTPUT=$(node "$PLUGIN_DIR/scripts/lookup.js" search \
   --registry-path "$FIXTURE_REGISTRY" \
   --domains-path "$PLUGIN_DIR/data/domains.json" 2>/dev/null)
 HAS_VERBOSE=$(echo "$SEARCH_OUTPUT" | node -e "
-  const d=JSON.parse(require('fs').readFileSync('/dev/stdin','utf8'));
+  const d=JSON.parse(require('fs').readFileSync('/dev/stdin','utf8')).data;
   const concepts=d.matched_concepts||[];
   const hasVerbose=concepts.some(c=>'aliases' in c || 'scope_note' in c || 'difficulty_tier' in c);
   console.log(hasVerbose?'yes':'no')")

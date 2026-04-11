@@ -2,7 +2,8 @@
 
 const path = require('node:path');
 const { ensureDir, isoNow, daysBetween, parseArgs,
-        readMarkdownWithFrontmatter, writeMarkdownFile, expandHome } = require('./utils.js');
+        readMarkdownWithFrontmatter, writeMarkdownFile, expandHome,
+        envelope, envelopeError } = require('./utils.js');
 const {
   computeNewStability, computeNewDifficulty, computeRetrievability,
   getInitialStability, getInitialDifficulty,
@@ -226,13 +227,13 @@ if (require.main === module) {
       body: args.body,
       nonce: args.nonce,
     });
-    process.stdout.write(JSON.stringify(result, null, 2) + '\n');
+    process.stdout.write(JSON.stringify(envelope(result), null, 2) + '\n');
   } catch (err) {
     if (err.code === 'EACCES') {
-      process.stderr.write(JSON.stringify({ error: err.message }) + '\n');
+      process.stderr.write(JSON.stringify(envelopeError('blocking', err.message)) + '\n');
       process.exit(2);
     }
-    process.stderr.write(JSON.stringify({ error: err.message }) + '\n');
+    process.stderr.write(JSON.stringify(envelopeError('fatal', err.message)) + '\n');
     process.exit(1);
   }
 }

@@ -2,7 +2,7 @@
 
 const path = require('node:path');
 const fs = require('node:fs');
-const { readJSON, ensureDir, parseArgs, daysBetween, isoNow, readMarkdownWithFrontmatter, listMarkdownFiles, expandHome } = require('./utils.js');
+const { readJSON, ensureDir, parseArgs, daysBetween, isoNow, readMarkdownWithFrontmatter, listMarkdownFiles, expandHome, envelope, envelopeError } = require('./utils.js');
 const { computeRetrievability, determineAction } = require('./fsrs.js');
 
 function search(registryPath, domainsPath, query) {
@@ -204,7 +204,7 @@ if (require.main === module) {
         process.exit(1);
       }
       const result = search(args['registry-path'], args['domains-path'], args.query);
-      process.stdout.write(JSON.stringify(result, null, 2) + '\n');
+      process.stdout.write(JSON.stringify(envelope(result), null, 2) + '\n');
     } else if (mode === 'status') {
       const statusRequired = ['concepts', 'profile-dir', 'domains-path', 'registry-path'];
       const missing = statusRequired.filter(k => !args[k]);
@@ -215,7 +215,7 @@ if (require.main === module) {
       }
       const conceptIds = args.concepts.split(',').map(s => s.trim());
       const result = status(conceptIds, expandHome(args['profile-dir']), args['domains-path'], args['registry-path']);
-      process.stdout.write(JSON.stringify(result, null, 2) + '\n');
+      process.stdout.write(JSON.stringify(envelope(result), null, 2) + '\n');
     } else if (mode === 'list-concepts') {
       const required = ['domains', 'registry-path', 'profile-dir'];
       const missing = required.filter(k => !args[k]);
@@ -226,7 +226,7 @@ if (require.main === module) {
       }
       const domains = args.domains.split(',').map(s => s.trim()).filter(Boolean);
       const result = listConcepts(domains, args['registry-path'], expandHome(args['profile-dir']));
-      process.stdout.write(JSON.stringify(result, null, 2) + '\n');
+      process.stdout.write(JSON.stringify(envelope(result), null, 2) + '\n');
     } else if (mode === 'reconcile') {
       const required = ['mode', 'candidate', 'registry-path', 'profile-dir'];
       const missing = required.filter(k => !args[k]);
@@ -236,17 +236,17 @@ if (require.main === module) {
         process.exit(1);
       }
       const result = reconcile(args.mode, args.candidate, args['registry-path'], expandHome(args['profile-dir']));
-      process.stdout.write(JSON.stringify(result, null, 2) + '\n');
+      process.stdout.write(JSON.stringify(envelope(result), null, 2) + '\n');
     } else {
       process.stderr.write(`Unknown mode: ${mode}. Use "search", "status", "list-concepts", or "reconcile".\n`);
       process.exit(1);
     }
   } catch (err) {
     if (err.code === 'EACCES') {
-      process.stderr.write(JSON.stringify({ error: err.message }) + '\n');
+      process.stderr.write(JSON.stringify(envelopeError('blocking', err.message)) + '\n');
       process.exit(2);
     }
-    process.stderr.write(JSON.stringify({ error: err.message }) + '\n');
+    process.stderr.write(JSON.stringify(envelopeError('fatal', err.message)) + '\n');
     process.exit(1);
   }
 }

@@ -3,7 +3,7 @@
 const crypto = require('node:crypto');
 const fs = require('node:fs');
 const path = require('node:path');
-const { readJSON, writeJSON, ensureDir, isoNow, parseArgs } = require('./utils.js');
+const { readJSON, writeJSON, ensureDir, isoNow, parseArgs, envelope, envelopeError } = require('./utils.js');
 
 const SESSION_FILE = '.session-state.json';
 
@@ -191,9 +191,9 @@ if (require.main === module) {
         process.stderr.write(`Unknown mode: ${mode}. Use create, load, update, add-concept, finish, or clear.\n`);
         process.exit(1);
     }
-    process.stdout.write(JSON.stringify(result, null, 2) + '\n');
+    process.stdout.write(JSON.stringify(envelope(result), null, 2) + '\n');
   } catch (err) {
-    process.stderr.write(JSON.stringify({ error: err.message }) + '\n');
+    process.stderr.write(JSON.stringify(envelopeError('fatal', err.message)) + '\n');
     process.exit(1);
   }
 }

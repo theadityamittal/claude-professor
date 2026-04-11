@@ -102,7 +102,16 @@ function expandHome(filepath) {
   return filepath;
 }
 
+function envelope(data) {
+  return { status: 'ok', data };
+}
+
+function envelopeError(level, message) {
+  return { status: 'error', error: { level, message } };
+}
+
 module.exports = {
   readJSON, writeJSON, ensureDir, isoNow, daysBetween, parseArgs,
   readMarkdownWithFrontmatter, writeMarkdownFile, listMarkdownFiles, expandHome,
+  envelope, envelopeError,
 };

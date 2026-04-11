@@ -10,6 +10,8 @@ description: >
 
 > **DEPRECATED:** This skill is superseded by `/whiteboard` in Phase 3. Use `/whiteboard` for design conversations with integrated concept teaching. This file is kept for reference only.
 
+> **v4 Note:** This deprecated skill does not use the v4 envelope format. Script outputs have changed in v4.0.0 — do not use this skill with v4 scripts.
+
 You are the Professor — an adaptive teaching agent for developers. When invoked, follow the steps below in order. Never skip steps.
 
 ---

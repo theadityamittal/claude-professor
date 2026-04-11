@@ -32,6 +32,8 @@ node ${CLAUDE_PLUGIN_ROOT}/scripts/lookup.js reconcile \
   --domains-path ${CLAUDE_PLUGIN_ROOT}/data/domains.json
 ```
 
+The script returns JSON in envelope format: `{status, data, error}`. Parse the `data` field for the match result (e.g., `output.data.match_type`). If `output.status` is `"error"`, treat as a script failure and follow the Self-Healing Retry Protocol.
+
 If matched: record the resolved concept ID and proceed to Compute Status.
 
 ### Step 2: Alias Match
@@ -44,6 +46,8 @@ node ${CLAUDE_PLUGIN_ROOT}/scripts/lookup.js reconcile \
   --domains-path ${CLAUDE_PLUGIN_ROOT}/data/domains.json
 ```
 
+The script returns JSON in envelope format: `{status, data, error}`. Parse the `data` field for the match result (e.g., `output.data.match_type`). If `output.status` is `"error"`, treat as a script failure and follow the Self-Healing Retry Protocol.
+
 If matched: register the alias so future lookups resolve faster:
 
 ```bash
@@ -53,6 +57,8 @@ node ${CLAUDE_PLUGIN_ROOT}/scripts/update.js \
   --profile-dir ~/.claude/professor/concepts/ \
   --registry-path ${CLAUDE_PLUGIN_ROOT}/data/concepts_registry.json
 ```
+
+The script returns JSON in envelope format: `{status, data, error}`. Parse the `data` field for the match result (e.g., `output.data.match_type`). If `output.status` is `"error"`, treat as a script failure and follow the Self-Healing Retry Protocol.
 
 Then proceed to Compute Status.
 
@@ -66,6 +72,8 @@ node ${CLAUDE_PLUGIN_ROOT}/scripts/lookup.js list-concepts \
   --domains "{comma-separated domain hints if provided}" \
   --profile-dir ~/.claude/professor/concepts/
 ```
+
+The script returns JSON in envelope format. Parse `output.data.concepts` for the concept list.
 
 Apply LLM judgment: is the candidate essentially the same concept as an existing registry entry? Use these criteria:
 - Same underlying technical idea (different wording counts as a match)
@@ -88,6 +96,8 @@ node ${CLAUDE_PLUGIN_ROOT}/scripts/update.js \
   --registry-path ${CLAUDE_PLUGIN_ROOT}/data/concepts_registry.json
 ```
 
+The script returns JSON in envelope format: `{status, data, error}`. Parse the `data` field for the match result (e.g., `output.data.match_type`). If `output.status` is `"error"`, treat as a script failure and follow the Self-Healing Retry Protocol.
+
 Before creating the file, ensure the domain directory exists:
 
 ```bash
@@ -105,6 +115,8 @@ node ${CLAUDE_PLUGIN_ROOT}/scripts/update.js \
   --profile-dir ~/.claude/professor/concepts/ \
   --registry-path ${CLAUDE_PLUGIN_ROOT}/data/concepts_registry.json
 ```
+
+The script returns JSON in envelope format: `{status, data, error}`. Parse the `data` field for the match result (e.g., `output.data.match_type`). If `output.status` is `"error"`, treat as a script failure and follow the Self-Healing Retry Protocol.
 
 Record the new concept in the `created` array.
 
@@ -133,6 +145,8 @@ node ${CLAUDE_PLUGIN_ROOT}/scripts/lookup.js status \
   --registry-path ${CLAUDE_PLUGIN_ROOT}/data/concepts_registry.json
 ```
 
+The script returns JSON in envelope format. Parse `output.data.concepts` for the status results.
+
 Use the `determineAction(R)` result from the script output:
 - `teach_new` → status is `teach_new`
 - `review` → status is `review`
@@ -149,7 +163,7 @@ These are incorrect invocations — wrong flags, missing arguments, or misspelle
 - **Action:** Correct the command and retry. There is no retry cap — each retry must use a corrected invocation with different arguments.
 - **Circuit breaker:** Not triggered. Usage errors are always fixable by adjusting the call.
 
-### Runtime Errors (output contains `{"error": "..."}` or a stack trace)
+### Runtime Errors (output `status` is `"error"` with an `error` object, or a stack trace)
 
 These are unexpected script-level failures.
 

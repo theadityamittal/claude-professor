@@ -265,8 +265,7 @@ if (require.main === module) {
   function validateArgs(required, usage) {
     const missing = required.filter(k => !args[k]);
     if (missing.length > 0) {
-      process.stderr.write(`Missing required arguments: ${missing.join(', ')}\n`);
-      process.stderr.write(`Usage: node graph.js ${usage}\n`);
+      process.stderr.write(JSON.stringify(envelopeError('blocking', `Missing required arguments: ${missing.join(', ')}. Usage: node graph.js ${usage}`)) + '\n');
       process.exit(1);
     }
   }

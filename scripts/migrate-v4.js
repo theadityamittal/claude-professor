@@ -24,7 +24,8 @@ function migrate(profileDir, dryRun) {
     let files;
     try {
       files = fs.readdirSync(domainPath).filter(f => f.endsWith('.md'));
-    } catch {
+    } catch (err) {
+      errors++;
       continue;
     }
 
@@ -55,7 +56,7 @@ function migrate(profileDir, dryRun) {
 
         writeMarkdownFile(filePath, updatedFrontmatter, existing.body);
         migrated++;
-      } catch {
+      } catch (err) {
         errors++;
       }
     }

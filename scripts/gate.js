@@ -23,8 +23,8 @@ function schedule(sessionDir, phase, concepts) {
   const existing = Array.isArray(state.teaching_schedule) ? state.teaching_schedule : [];
   const updated = [...existing, ...concepts];
 
-  state.teaching_schedule = updated;
-  writeJSON(sessionPath, state);
+  const updatedState = { ...state, teaching_schedule: updated };
+  writeJSON(sessionPath, updatedState);
 
   return { scheduled: concepts.length, total: updated.length };
 }
@@ -54,8 +54,8 @@ function checkpoint(sessionDir, step) {
 
   const entry = { step, result, timestamp: isoNow() };
   const history = Array.isArray(state.checkpoint_history) ? state.checkpoint_history : [];
-  state.checkpoint_history = [...history, entry];
-  writeJSON(sessionPath, state);
+  const updatedState = { ...state, checkpoint_history: [...history, entry] };
+  writeJSON(sessionPath, updatedState);
 
   return { result, missing };
 }

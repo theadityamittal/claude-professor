@@ -118,6 +118,24 @@ describe('finish', () => {
     assert.ok(result.warnings.some(w => w.includes('open circuit breaker')));
   });
 
+  it('warns when checkpoints are degraded', () => {
+    const { create, finish } = require('../../scripts/session.js');
+    create(testDir, 'test feature', 'main');
+
+    const state = readSessionState(testDir);
+    state.checkpoint_history = [
+      { step: 'phase1_checkpoint1', result: 'degraded', timestamp: '2026-04-11T00:00:00.000Z' },
+    ];
+    fs.writeFileSync(
+      path.join(testDir, '.session-state.json'),
+      JSON.stringify(state, null, 2) + '\n'
+    );
+
+    const result = finish(testDir);
+
+    assert.ok(result.warnings.some(w => w.includes('degraded mode')));
+  });
+
   it('throws when no active session', () => {
     const { finish } = require('../../scripts/session.js');
 

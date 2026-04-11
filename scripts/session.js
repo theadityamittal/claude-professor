@@ -120,6 +120,14 @@ function finish(sessionDir) {
     warnings.push(`${unresolvedCount} checkpoints never resolved`);
   }
 
+  const degradedSteps = new Set(
+    history.filter(h => h.result === 'degraded').map(h => h.step)
+  );
+  const unresolvedDegradedCount = [...degradedSteps].filter(s => !passedSteps.has(s)).length;
+  if (unresolvedDegradedCount > 0) {
+    warnings.push(`${unresolvedDegradedCount} checkpoints completed in degraded mode (enforcement bypassed)`);
+  }
+
   if (state.circuit_breaker === 'open') {
     warnings.push('Session completed with open circuit breaker');
   }
@@ -142,8 +150,7 @@ if (require.main === module) {
   function validateArgs(required, usage) {
     const missing = required.filter(k => !args[k]);
     if (missing.length > 0) {
-      process.stderr.write(`Missing required arguments: ${missing.join(', ')}\n`);
-      process.stderr.write(`Usage: node session.js ${usage}\n`);
+      process.stderr.write(JSON.stringify(envelopeError('blocking', `Missing required arguments: ${missing.join(', ')}. Usage: node session.js ${usage}`)) + '\n');
       process.exit(1);
     }
   }

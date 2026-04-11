@@ -61,6 +61,11 @@ describe('schedule', () => {
     assert.strictEqual(state.teaching_schedule[0].concept_id, 'caching');
   });
 
+  it('throws when no active session', () => {
+    const { schedule } = require('../../scripts/gate.js');
+    assert.throws(() => schedule(testDir, 1, []), /No active session/);
+  });
+
   it('appends phase 2 concepts without replacing phase 1', () => {
     const { schedule } = require('../../scripts/gate.js');
     const state = baseState();
@@ -85,6 +90,11 @@ describe('schedule', () => {
 });
 
 describe('checkpoint', () => {
+  it('throws when no active session', () => {
+    const { checkpoint } = require('../../scripts/gate.js');
+    assert.throws(() => checkpoint(testDir, 'phase1_checkpoint1'), /No active session/);
+  });
+
   it('returns passed when all scheduled concepts are in concepts_checked', () => {
     const { checkpoint } = require('../../scripts/gate.js');
     const state = baseState();
@@ -127,6 +137,7 @@ describe('checkpoint', () => {
 
     const result = checkpoint(testDir, 'phase1_checkpoint1');
     assert.strictEqual(result.result, 'degraded');
+    assert.deepStrictEqual(result.missing, ['caching']);
   });
 
   it('returns passed when no concepts scheduled for step', () => {

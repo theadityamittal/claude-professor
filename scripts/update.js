@@ -192,15 +192,14 @@ if (require.main === module) {
     const required = ['concept', 'domain', 'grade', 'profile-dir'];
     const missing = required.filter(k => !args[k]);
     if (missing.length > 0) {
-      process.stderr.write(`Missing required arguments: ${missing.join(', ')}\n`);
-      process.stderr.write('Usage: node update.js --concept ID --domain DOMAIN --grade 1-4 --profile-dir PATH\n');
+      process.stderr.write(JSON.stringify(envelopeError('blocking', `Missing required arguments: ${missing.join(', ')}. Usage: node update.js --concept ID --domain DOMAIN --grade 1-4 --profile-dir PATH`)) + '\n');
       process.exit(1);
     }
   } else {
     const required = ['concept', 'domain', 'profile-dir'];
     const missing = required.filter(k => !args[k]);
     if (missing.length > 0) {
-      process.stderr.write(`Missing required arguments: ${missing.join(', ')}\n`);
+      process.stderr.write(JSON.stringify(envelopeError('blocking', `Missing required arguments: ${missing.join(', ')}`)) + '\n');
       process.exit(1);
     }
   }

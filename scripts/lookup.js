@@ -199,8 +199,7 @@ if (require.main === module) {
       const searchRequired = ['registry-path', 'domains-path', 'query'];
       const missing = searchRequired.filter(k => !args[k]);
       if (missing.length > 0) {
-        process.stderr.write(`Missing required arguments: ${missing.join(', ')}\n`);
-        process.stderr.write('Usage: node lookup.js search --query QUERY --registry-path PATH --domains-path PATH\n');
+        process.stderr.write(JSON.stringify(envelopeError('blocking', `Missing required arguments: ${missing.join(', ')}. Usage: node lookup.js search --query QUERY --registry-path PATH --domains-path PATH`)) + '\n');
         process.exit(1);
       }
       const result = search(args['registry-path'], args['domains-path'], args.query);
@@ -209,8 +208,7 @@ if (require.main === module) {
       const statusRequired = ['concepts', 'profile-dir', 'domains-path', 'registry-path'];
       const missing = statusRequired.filter(k => !args[k]);
       if (missing.length > 0) {
-        process.stderr.write(`Missing required arguments: ${missing.join(', ')}\n`);
-        process.stderr.write('Usage: node lookup.js status --concepts IDS --profile-dir PATH --domains-path PATH --registry-path PATH\n');
+        process.stderr.write(JSON.stringify(envelopeError('blocking', `Missing required arguments: ${missing.join(', ')}. Usage: node lookup.js status --concepts IDS --profile-dir PATH --domains-path PATH --registry-path PATH`)) + '\n');
         process.exit(1);
       }
       const conceptIds = args.concepts.split(',').map(s => s.trim());
@@ -220,8 +218,7 @@ if (require.main === module) {
       const required = ['domains', 'registry-path', 'profile-dir'];
       const missing = required.filter(k => !args[k]);
       if (missing.length > 0) {
-        process.stderr.write(`Missing required arguments: ${missing.join(', ')}\n`);
-        process.stderr.write('Usage: node lookup.js list-concepts --domains DOMAINS --registry-path PATH --profile-dir PATH\n');
+        process.stderr.write(JSON.stringify(envelopeError('blocking', `Missing required arguments: ${missing.join(', ')}. Usage: node lookup.js list-concepts --domains DOMAINS --registry-path PATH --profile-dir PATH`)) + '\n');
         process.exit(1);
       }
       const domains = args.domains.split(',').map(s => s.trim()).filter(Boolean);
@@ -231,8 +228,7 @@ if (require.main === module) {
       const required = ['mode', 'candidate', 'registry-path', 'profile-dir'];
       const missing = required.filter(k => !args[k]);
       if (missing.length > 0) {
-        process.stderr.write(`Missing required arguments: ${missing.join(', ')}\n`);
-        process.stderr.write('Usage: node lookup.js reconcile --mode exact|alias --candidate NAME --registry-path PATH --profile-dir PATH\n');
+        process.stderr.write(JSON.stringify(envelopeError('blocking', `Missing required arguments: ${missing.join(', ')}. Usage: node lookup.js reconcile --mode exact|alias --candidate NAME --registry-path PATH --profile-dir PATH`)) + '\n');
         process.exit(1);
       }
       const result = reconcile(args.mode, args.candidate, args['registry-path'], expandHome(args['profile-dir']));

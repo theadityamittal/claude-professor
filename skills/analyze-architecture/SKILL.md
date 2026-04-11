@@ -5,8 +5,19 @@ description: >
   stored as interlinked markdown files. Use when starting a new project
   analysis or when the architecture may have changed significantly.
 disable-model-invocation: true
-argument-hint: "[--update] [--branch name]"
+argument-hint: "[--update] [--branch name] [--budget N]"
 model: sonnet
+inputs:
+  - update: "boolean, optional — refresh existing architecture"
+  - branch: "string, optional — compare branch against stored base"
+  - budget: "integer, optional — max files in scan manifest (default: 100)"
+outputs:
+  - architecture_docs: "docs/professor/architecture/"
+  - concept_scope: "docs/professor/architecture/concept-scope.json"
+failure_modes:
+  - scan_subagent_failure: "retry once, then report failure and stop"
+  - analyze_subagent_failure: "report failure and stop"
+  - verify_broken_links: "report to developer, continue to cleanup"
 ---
 
 You are an architecture analyst orchestrating a 4-stage pipeline. Each stage runs as a subagent and writes its output to disk. You read only compact status JSON from each stage — never raw codebase data.
@@ -17,6 +28,7 @@ Read `$ARGUMENTS` for flags:
 - No flags: full analysis from scratch
 - `--update`: refresh existing architecture (re-scan, update changed, preserve unchanged)
 - `--branch {name}`: generate a delta file comparing the specified branch against the stored base architecture
+- `--budget {N}`: max files in scan manifest (default: 100). Increase for large codebases (e.g., `--budget 300`). Files are prioritized: manifests > configs > source > tests > docs.
 
 ## Setup
 
@@ -32,10 +44,12 @@ Dispatch an Explore subagent with this exact prompt:
 
 > You are a codebase scanner. Your job is to produce a scan manifest and write it to disk. Do not explain your work — just execute.
 >
-> **Step 1:** Run the scan script:
+> **Step 1:** Run the scan script (use the `--budget` value from arguments, or 100 if not specified):
 > ```bash
-> node ${CLAUDE_PLUGIN_ROOT}/scripts/graph.js scan --dir . --budget 100
+> node ${CLAUDE_PLUGIN_ROOT}/scripts/graph.js scan --dir . --budget {budget}
 > ```
+>
+> The script returns JSON wrapped in `{status, data, error}` envelope format. Parse the `data` field for results.
 >
 > **Step 2:** The script returns a JSON manifest with `files[]`. Each file has `path`, `language`, `type`, and `size`. For each file with `type` of `source`, `manifest`, or `config`: read the file and add:
 > - `description`: max 12 words describing its purpose
@@ -72,6 +86,7 @@ Dispatch an Explore subagent with this exact prompt:
 >   --registry-path ${CLAUDE_PLUGIN_ROOT}/data/concepts_registry.json \
 >   --domains-path ${CLAUDE_PLUGIN_ROOT}/data/domains.json
 > ```
+> The script returns JSON wrapped in `{status, data, error}` envelope format. Parse the `data` field for results.
 > Use `concept_id` fields from `matched_concepts`.
 >
 > **Step 5:** For each component, run:
@@ -85,6 +100,7 @@ Dispatch an Explore subagent with this exact prompt:
 >   --key-files "{comma-separated paths from scan manifest}" \
 >   --output-dir docs/professor/architecture/components/
 > ```
+> The script returns JSON wrapped in `{status, data, error}` envelope format. Parse the `data` field for results.
 >
 > **Step 6:** Output ONLY this JSON:
 > `{"components_written": <count>}`
@@ -119,6 +135,7 @@ Dispatch an Explore subagent with this exact prompt:
 >   --registry-path ${CLAUDE_PLUGIN_ROOT}/data/concepts_registry.json \
 >   --domains-path ${CLAUDE_PLUGIN_ROOT}/data/domains.json
 > ```
+> The script returns JSON wrapped in `{status, data, error}` envelope format. Parse the `data` field for results.
 > Apply these domain heuristics to set `relevant_domains`:
 > | Tech Signals | Domains |
 > |---|---|
@@ -148,6 +165,7 @@ Dispatch an Explore subagent with this exact prompt:
 >   --branch "$(git branch --show-current)" \
 >   --summary "{2-3 sentence description}"
 > ```
+> The script returns JSON wrapped in `{status, data, error}` envelope format. Parse the `data` field for results.
 >
 > **Step 6:** Count the files you actually wrote (data-flow.md, tech-stack.md, concept-scope.json, and the updated index each count as 1). Output ONLY this JSON:
 > `{"files_written": <count of files actually written>}`
@@ -173,6 +191,7 @@ Dispatch an Explore subagent with this exact prompt:
 >   --registry-path ${CLAUDE_PLUGIN_ROOT}/data/concepts_registry.json \
 >   --domains-path ${CLAUDE_PLUGIN_ROOT}/data/domains.json
 > ```
+> The script returns JSON wrapped in `{status, data, error}` envelope format. Parse the `data` field for results.
 > Collect any IDs not found.
 >
 > **Step 4:** Output ONLY this JSON:

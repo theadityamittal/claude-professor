@@ -7,7 +7,7 @@
     {
       "name": "claude-professor",
       "source": "./",
-      "version": "3.1.0",
+      "version": "4.0.0",
       "description": "Learning layer for AI-assisted development. Domain-agnostic solutions architect with FSRS-driven concept teaching, 407 seed concepts across 18 domains, and dynamic concept management."
     }
   ]

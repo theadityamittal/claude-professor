@@ -2,7 +2,8 @@
 
 const path = require('node:path');
 const { ensureDir, isoNow, daysBetween, parseArgs,
-        readMarkdownWithFrontmatter, writeMarkdownFile, expandHome } = require('./utils.js');
+        readMarkdownWithFrontmatter, writeMarkdownFile, expandHome,
+        envelope, envelopeError } = require('./utils.js');
 const {
   computeNewStability, computeNewDifficulty, computeRetrievability,
   getInitialStability, getInitialDifficulty,
@@ -19,7 +20,7 @@ function update(options) {
     isRegistryConcept, isSeedConcept, difficultyTier,
     profileDir, documentationUrl, notes,
     level, parentConcept, aliases, scopeNote, relatedConcepts,
-    createParent, addAlias, body,
+    createParent, addAlias, body, nonce,
   } = options;
 
   ensureDir(profileDir);
@@ -91,6 +92,18 @@ function update(options) {
     };
   }
 
+  // --- nonce idempotency check (grade path only) ---
+  if (nonce !== undefined && existing) {
+    if (existing.frontmatter.operation_nonce === nonce) {
+      return {
+        success: true,
+        concept_id: concept,
+        domain,
+        action: 'idempotent_skip',
+      };
+    }
+  }
+
   // --- grade-based create / update path ---
   const gradeNum = parseInt(grade, 10);
   if (![1, 2, 3, 4].includes(gradeNum)) {
@@ -104,6 +117,8 @@ function update(options) {
     const frontmatter = {
       concept_id: concept,
       domain,
+      schema_version: 4,
+      operation_nonce: nonce || null,
       level: level !== undefined ? parseInt(level, 10) : 1,
       parent_concept: parentConcept || null,
       is_seed_concept: isSeedConcept === true || isSeedConcept === 'true',
@@ -144,6 +159,8 @@ function update(options) {
 
   const updatedFrontmatter = {
     ...entry,
+    schema_version: entry.schema_version || 4,
+    operation_nonce: nonce || entry.operation_nonce || null,
     last_reviewed: now,
     review_history: [...entry.review_history, { date: now, grade: gradeNum }],
     fsrs_stability: Math.round(newStability * 10000) / 10000,
@@ -175,15 +192,14 @@ if (require.main === module) {
     const required = ['concept', 'domain', 'grade', 'profile-dir'];
     const missing = required.filter(k => !args[k]);
     if (missing.length > 0) {
-      process.stderr.write(`Missing required arguments: ${missing.join(', ')}\n`);
-      process.stderr.write('Usage: node update.js --concept ID --domain DOMAIN --grade 1-4 --profile-dir PATH\n');
+      process.stderr.write(JSON.stringify(envelopeError('blocking', `Missing required arguments: ${missing.join(', ')}. Usage: node update.js --concept ID --domain DOMAIN --grade 1-4 --profile-dir PATH`)) + '\n');
       process.exit(1);
     }
   } else {
     const required = ['concept', 'domain', 'profile-dir'];
     const missing = required.filter(k => !args[k]);
     if (missing.length > 0) {
-      process.stderr.write(`Missing required arguments: ${missing.join(', ')}\n`);
+      process.stderr.write(JSON.stringify(envelopeError('blocking', `Missing required arguments: ${missing.join(', ')}`)) + '\n');
       process.exit(1);
     }
   }
@@ -208,14 +224,15 @@ if (require.main === module) {
       createParent: isCreateParent,
       addAlias: args['add-alias'],
       body: args.body,
+      nonce: args.nonce,
     });
-    process.stdout.write(JSON.stringify(result, null, 2) + '\n');
+    process.stdout.write(JSON.stringify(envelope(result), null, 2) + '\n');
   } catch (err) {
     if (err.code === 'EACCES') {
-      process.stderr.write(JSON.stringify({ error: err.message }) + '\n');
+      process.stderr.write(JSON.stringify(envelopeError('blocking', err.message)) + '\n');
       process.exit(2);
     }
-    process.stderr.write(JSON.stringify({ error: err.message }) + '\n');
+    process.stderr.write(JSON.stringify(envelopeError('fatal', err.message)) + '\n');
     process.exit(1);
   }
 }

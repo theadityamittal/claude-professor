@@ -2,7 +2,7 @@
 
 const fs = require('node:fs');
 const path = require('node:path');
-const { ensureDir, isoNow, parseArgs, listMarkdownFiles } = require('./utils.js');
+const { ensureDir, isoNow, parseArgs, listMarkdownFiles, envelope, envelopeError } = require('./utils.js');
 
 function createComponent(options) {
   const { id, description, concepts, dependsOn, dependedOnBy,
@@ -265,8 +265,7 @@ if (require.main === module) {
   function validateArgs(required, usage) {
     const missing = required.filter(k => !args[k]);
     if (missing.length > 0) {
-      process.stderr.write(`Missing required arguments: ${missing.join(', ')}\n`);
-      process.stderr.write(`Usage: node graph.js ${usage}\n`);
+      process.stderr.write(JSON.stringify(envelopeError('blocking', `Missing required arguments: ${missing.join(', ')}. Usage: node graph.js ${usage}`)) + '\n');
       process.exit(1);
     }
   }
@@ -316,9 +315,9 @@ if (require.main === module) {
         process.stderr.write(`Unknown mode: ${mode}. Use create-component, update-index, detect-changes, or scan.\n`);
         process.exit(1);
     }
-    process.stdout.write(JSON.stringify(result, null, 2) + '\n');
+    process.stdout.write(JSON.stringify(envelope(result), null, 2) + '\n');
   } catch (err) {
-    process.stderr.write(JSON.stringify({ error: err.message }) + '\n');
+    process.stderr.write(JSON.stringify(envelopeError('fatal', err.message)) + '\n');
     process.exit(1);
   }
 }

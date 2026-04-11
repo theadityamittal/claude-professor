@@ -13,6 +13,5 @@ Educational workflow skill definitions including professor, whiteboard, and conc
 - [[session-state]]
 
 ## Key Files
-- skills/professor/SKILL.md
 - skills/professor-teach/SKILL.md
 - skills/whiteboard/SKILL.md

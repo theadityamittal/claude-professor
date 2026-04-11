@@ -1,8 +1,9 @@
 'use strict';
 
+const crypto = require('node:crypto');
 const fs = require('node:fs');
 const path = require('node:path');
-const { readJSON, writeJSON, ensureDir, isoNow, parseArgs } = require('./utils.js');
+const { readJSON, writeJSON, ensureDir, isoNow, parseArgs, envelope, envelopeError } = require('./utils.js');
 
 const SESSION_FILE = '.session-state.json';
 
@@ -13,7 +14,8 @@ function getSessionPath(sessionDir) {
 function create(sessionDir, feature, branch) {
   ensureDir(sessionDir);
   const state = {
-    version: 1,
+    version: 2,
+    session_id: crypto.randomUUID(),
     feature,
     branch,
     started: isoNow(),
@@ -27,9 +29,12 @@ function create(sessionDir, feature, branch) {
     design_options_proposed: [],
     chosen_option: null,
     context_snapshot: null,
+    teaching_schedule: [],
+    checkpoint_history: [],
+    circuit_breaker: 'closed',
   };
   writeJSON(getSessionPath(sessionDir), state);
-  return { success: true, feature, branch };
+  return { success: true, session_id: state.session_id, feature, branch };
 }
 
 function load(sessionDir) {
@@ -88,40 +93,55 @@ function clear(sessionDir) {
   return { success: true };
 }
 
-function gate(sessionDir, requireType) {
-  if (requireType !== 'concepts') {
-    process.stderr.write(`Unknown --require value: "${requireType}". Supported: concepts\n`);
-    process.exit(1);
+function finish(sessionDir) {
+  const sessionPath = getSessionPath(sessionDir);
+  const state = readJSON(sessionPath);
+  if (!state) throw new Error('No active session to finish');
+
+  const warnings = [];
+
+  const schedule = Array.isArray(state.teaching_schedule) ? state.teaching_schedule : [];
+  const checked = Array.isArray(state.concepts_checked) ? state.concepts_checked : [];
+  const checkedIds = new Set(checked.map(c => c.concept_id));
+  const untaught = schedule.filter(c => !checkedIds.has(c.concept_id));
+  if (untaught.length > 0) {
+    warnings.push(`${untaught.length} concepts scheduled but not taught: ${untaught.map(c => c.concept_id).join(', ')}`);
   }
 
-  const state = readJSON(getSessionPath(sessionDir));
-
-  if (!state) {
-    process.stdout.write(JSON.stringify({
-      gate: 'open',
-      warning: 'no active session found',
-    }, null, 2) + '\n');
-    return;
+  const history = Array.isArray(state.checkpoint_history) ? state.checkpoint_history : [];
+  const blockedSteps = new Set(
+    history.filter(h => h.result === 'blocked').map(h => h.step)
+  );
+  const passedSteps = new Set(
+    history.filter(h => h.result === 'passed').map(h => h.step)
+  );
+  const unresolvedCount = [...blockedSteps].filter(s => !passedSteps.has(s)).length;
+  if (unresolvedCount > 0) {
+    warnings.push(`${unresolvedCount} checkpoints never resolved`);
   }
 
-  if (!Array.isArray(state.concepts_checked)) {
-    process.stderr.write(JSON.stringify({
-      error: 'Malformed session state: concepts_checked is missing or not an array',
-      path: getSessionPath(sessionDir),
-    }, null, 2) + '\n');
-    process.exit(1);
+  const degradedSteps = new Set(
+    history.filter(h => h.result === 'degraded').map(h => h.step)
+  );
+  const unresolvedDegradedCount = [...degradedSteps].filter(s => !passedSteps.has(s)).length;
+  if (unresolvedDegradedCount > 0) {
+    warnings.push(`${unresolvedDegradedCount} checkpoints completed in degraded mode (enforcement bypassed)`);
   }
 
-  if (state.concepts_checked.length === 0) {
-    process.stdout.write(JSON.stringify({
-      gate: 'blocked',
-      reason: 'concepts_checked is empty — run concept-agent before proceeding',
-    }, null, 2) + '\n');
-    process.exit(1);
+  if (state.circuit_breaker === 'open') {
+    warnings.push('Session completed with open circuit breaker');
   }
 
-  process.stdout.write(JSON.stringify({ gate: 'open' }, null, 2) + '\n');
+  const updatedState = {
+    ...state,
+    phase: 'complete',
+    last_updated: isoNow(),
+  };
+  writeJSON(sessionPath, updatedState);
+
+  return { verified: true, warnings };
 }
+
 
 if (require.main === module) {
   const mode = process.argv[2];
@@ -130,8 +150,7 @@ if (require.main === module) {
   function validateArgs(required, usage) {
     const missing = required.filter(k => !args[k]);
     if (missing.length > 0) {
-      process.stderr.write(`Missing required arguments: ${missing.join(', ')}\n`);
-      process.stderr.write(`Usage: node session.js ${usage}\n`);
+      process.stderr.write(JSON.stringify(envelopeError('blocking', `Missing required arguments: ${missing.join(', ')}. Usage: node session.js ${usage}`)) + '\n');
       process.exit(1);
     }
   }
@@ -171,20 +190,19 @@ if (require.main === module) {
         validateArgs(['session-dir'], 'clear --session-dir PATH');
         result = clear(args['session-dir']);
         break;
-      case 'gate':
-        validateArgs(['session-dir', 'require'], 'gate --session-dir PATH --require concepts');
-        // gate handles its own stdout/exit; skip shared output
-        gate(args['session-dir'], args.require);
-        return;
+      case 'finish':
+        validateArgs(['session-dir'], 'finish --session-dir PATH');
+        result = finish(args['session-dir']);
+        break;
       default:
-        process.stderr.write(`Unknown mode: ${mode}. Use create, load, update, add-concept, clear, or gate.\n`);
+        process.stderr.write(`Unknown mode: ${mode}. Use create, load, update, add-concept, finish, or clear.\n`);
         process.exit(1);
     }
-    process.stdout.write(JSON.stringify(result, null, 2) + '\n');
+    process.stdout.write(JSON.stringify(envelope(result), null, 2) + '\n');
   } catch (err) {
-    process.stderr.write(JSON.stringify({ error: err.message }) + '\n');
+    process.stderr.write(JSON.stringify(envelopeError('fatal', err.message)) + '\n');
     process.exit(1);
   }
 }
 
-module.exports = { create, load, update, addConcept, clear, gate };
+module.exports = { create, load, update, addConcept, finish, clear };

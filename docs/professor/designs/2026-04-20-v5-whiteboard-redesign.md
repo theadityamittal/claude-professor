@@ -201,7 +201,8 @@ No more `degraded` state. No circuit breaker.
       "description": "Correctness across distributed writes, replicas, and concurrent modifications.",
       "keywords": ["consistency", "race", "transaction", "acid", "replica", "concurrent"],
       "mapped_seeds": [
-        "optimistic_concurrency",
+        "acid_transactions",
+        "isolation_levels",
         "eventual_consistency",
         "two_phase_commit",
         "vector_clocks",
@@ -218,6 +219,11 @@ No more `degraded` state. No circuit breaker.
       "mapped_seeds": ["..."],
       "canonical_sources": ["..."]
     }
+  },
+  "orphan_l1s": {
+    "arrays": "Implementation-level data structure; serves as L2 parent container in Phase 2/3, not a Phase 1 concern selection",
+    "bloom_filters": "Algorithmic primitive; serves as L2 parent for hash-based optimizations",
+    "classification": "ML-domain-specific; serves as L2 parent for ML feature design"
   }
 }
 ```
@@ -226,13 +232,15 @@ No more `degraded` state. No circuit breaker.
 
 - `description` (string, required) — one-line summary; shown to LLM at concern selection
 - `keywords` (string[], required) — selection aid; LLM uses to match task context
-- `mapped_seeds` (string[], required, non-empty) — L1 concept IDs; every entry must exist in `concepts_registry.json`
+- `mapped_seeds` (string[], required, ≥ 3 entries) — L1 concept IDs; every entry must exist in `concepts_registry.json`
 - `canonical_sources` (string[], optional) — provenance for audit
+- `orphan_l1s` (object, top-level) — L1 IDs intentionally NOT mapped to any concern, with a one-line reason. These are registry entries that serve as **L2 parent containers** in Phase 2/3 HLD/LLD (e.g., `sorting_algorithms` can parent an L2 `radix_sort` proposed in an LLD discussion) but aren't design-time concerns to select in Phase 1. Making this explicit prevents accidental coverage gaps and documents the dual-purpose of the registry.
 
 **Constraints (validated by `scripts/validate-concerns.js`):**
 
 - Every `mapped_seeds` entry exists in registry
-- Every L1 in registry appears in at least one concern (no orphan seeds)
+- Every L1 in registry appears in **either** at least one concern's `mapped_seeds` **OR** in top-level `orphan_l1s` (full accounting — no silent gaps)
+- `orphan_l1s` and `mapped_seeds` are disjoint (an L1 is either a concern or an orphan, not both)
 - No L1 appears in more than 4 concerns (prevents over-claiming while allowing L1s that legitimately span topics like `caching_strategies` → caching + cost + scalability + performance)
 - Each concern has ≥ 3 mapped seeds (narrower concerns lack teaching depth); no upper cap (some concerns like `data_consistency` or `security_and_secrets` legitimately span 15+ L1s)
 - All concern IDs are unique
@@ -470,9 +478,9 @@ Aim: 15-25 concerns at "meeting-topic" level — broader than specific patterns,
 
 For each concern, select L1 concepts from the registry (minimum 3, no upper cap):
 
-1. **Coverage:** every registry L1 maps to at least one concern (run `validate-concerns.js`). With 407 L1s and ~19 concerns, average mapping load is ~21 seeds per concern; concerns that are naturally narrow (e.g., `caching`) have fewer, broad ones (e.g., `data_consistency`) have more.
+1. **Coverage:** every registry L1 is **accounted for** — either appears in at least one concern's `mapped_seeds`, or is explicitly listed in top-level `orphan_l1s` with a one-line reason. Orphans exist because the registry is dual-purpose: L1s serve both as **Phase 1 concern selections** AND as **L2 parent containers** in Phase 2/3. An L1 like `sorting_algorithms` is a legitimate L2 parent (e.g., L2 `radix_sort`) but not a design-time concern — it belongs in `orphan_l1s`, not `mapped_seeds`. Expected: algorithmic primitives, language-level features, ML-domain-specific concepts, and implementation-detail L1s will be orphans.
 2. **Bounded:** any L1 maps to at most 4 concerns (prevents dilution while allowing legit cross-cutting L1s)
-3. **Reasoning:** include per-seed rationale in `data/concerns-mapping-notes.md` (sibling file, human-readable)
+3. **Reasoning:** include per-seed rationale in `data/concerns-mapping-notes.md` (sibling file, human-readable); orphan reasons live in `concerns.json` itself
 
 Mapping is done by Claude with full registry in context, reviewed by maintainer in PR. The mapping-notes file makes the rationale auditable.
 

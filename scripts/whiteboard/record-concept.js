@@ -13,7 +13,7 @@ const VALID_ACTIONS = new Set(['taught', 'reviewed', 'known_baseline', 'skipped_
 /**
  * Implements `whiteboard.js record-concept` per spec §5.1.8.
  *
- * Validates phase/unit/concept/action/status pairing/grade up-front, only mutates
+ * Validates phase/unit/concept/action/grade up-front, only mutates
  * state once all checks pass.
  *
  * @param {object} args

@@ -29,6 +29,10 @@ require('./whiteboard/phase-start')(register);
 require('./whiteboard/register-selection')(register);
 require('./whiteboard/register-components')(register);
 
+// Iterators (T-SCRIPT-5 batch 2).
+require('./whiteboard/next-concern')(register);
+require('./whiteboard/next-component')(register);
+
 function main(argv) {
   const sub = argv[0];
   if (!sub) {

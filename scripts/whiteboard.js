@@ -42,6 +42,11 @@ require('./whiteboard/mark-concern-done')(register);
 require('./whiteboard/mark-component-done')(register);
 require('./whiteboard/mark-skipped')(register);
 
+// Phase/session closers (T-SCRIPT-5 batch 4).
+require('./whiteboard/phase-complete')(register);
+require('./whiteboard/export-design-doc')(register);
+require('./whiteboard/finish')(register);
+
 function main(argv) {
   const sub = argv[0];
   if (!sub) {

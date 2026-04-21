@@ -25,6 +25,10 @@ require('./whiteboard/init-session')(register);
 require('./whiteboard/resume-session')(register);
 require('./whiteboard/phase-start')(register);
 
+// Schedulers (T-SCRIPT-5 batch 2).
+require('./whiteboard/register-selection')(register);
+require('./whiteboard/register-components')(register);
+
 function main(argv) {
   const sub = argv[0];
   if (!sub) {

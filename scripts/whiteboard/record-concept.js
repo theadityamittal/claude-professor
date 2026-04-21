@@ -2,55 +2,13 @@
 
 const fs = require('node:fs');
 const path = require('node:path');
-const { spawnSync } = require('node:child_process');
-const { envelope, envelopeError, readJSON, writeJSON, isoNow, expandHome } = require('../utils.js');
+const { envelope, envelopeError, readJSON, writeJSON, isoNow } = require('../utils.js');
 const { appendLog } = require('./_log.js');
 
 const STATE_FILE = '.session-state.json';
 const SCHEMA_VERSION = 5;
-const LOOKUP_SCRIPT = path.resolve(__dirname, '..', 'lookup.js');
-const DEFAULT_REGISTRY_PATH = path.resolve(__dirname, '..', '..', 'data', 'concepts_registry.json');
-const DEFAULT_PROFILE_DIR = expandHome('~/.claude/professor/concepts');
 
 const VALID_ACTIONS = new Set(['taught', 'reviewed', 'known_baseline', 'skipped_not_due']);
-
-// FSRS status -> set of allowed actions, per spec §2.6.
-const ACTION_BY_STATUS = {
-  new: new Set(['taught', 'known_baseline']),
-  encountered_via_child: new Set(['taught']),
-  teach_new: new Set(['taught', 'reviewed']),
-  review: new Set(['reviewed']),
-  skip: new Set(['skipped_not_due']),
-};
-
-function fetchConceptState(conceptId, registryPath, profileDir) {
-  const r = spawnSync(
-    'node',
-    [
-      LOOKUP_SCRIPT,
-      'concept-state',
-      '--concept', conceptId,
-      '--registry-path', registryPath,
-      '--profile-dir', profileDir,
-    ],
-    { encoding: 'utf-8' }
-  );
-  if (r.status !== 0) {
-    throw new Error(
-      `lookup.js concept-state ${conceptId} failed (exit=${r.status}): ${r.stderr || r.stdout}`
-    );
-  }
-  let parsed;
-  try {
-    parsed = JSON.parse(r.stdout);
-  } catch (err) {
-    throw new Error(`lookup.js concept-state ${conceptId} stdout not JSON: ${err.message}`);
-  }
-  if (!parsed || parsed.status !== 'ok' || !parsed.data) {
-    throw new Error(`lookup.js concept-state ${conceptId} bad envelope: ${r.stdout}`);
-  }
-  return parsed.data;
-}
 
 /**
  * Implements `whiteboard.js record-concept` per spec §5.1.8.
@@ -181,23 +139,6 @@ function handler(args) {
       envelopeError('blocking', `concept_id '${conceptId}' not scheduled in current unit '${unitId}'`),
       2,
     ];
-  }
-
-  // Fetch fresh FSRS status.
-  const registryPath = args['registry-path'] || DEFAULT_REGISTRY_PATH;
-  const profileDirRaw = args['profile-dir'] || DEFAULT_PROFILE_DIR;
-  const profileDir = expandHome(profileDirRaw);
-
-  let cs;
-  try {
-    cs = fetchConceptState(conceptId, registryPath, profileDir);
-  } catch (err) {
-    return [envelopeError('fatal', err.message), 1];
-  }
-  const status = cs.fsrs_status;
-  const allowed = ACTION_BY_STATUS[status];
-  if (!allowed || !allowed.has(action)) {
-    return [envelopeError('blocking', `Invalid action ${action} for status ${status}`), 2];
   }
 
   // All validation passed — mutate.

@@ -237,31 +237,6 @@ describe('whiteboard.js record-concept — validation', () => {
     assert.match(err.error.message, /grade not allowed for skipped_not_due/);
   });
 
-  it('blocks when action/status pair invalid (taught when status=skip)', () => {
-    setupPhase1();
-    const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
-    addProfile('transactions', 'distributed_systems', {
-      last_reviewed: yesterday,
-      review_history: [{ date: yesterday, grade: 4 }],
-      fsrs_stability: 10000,
-    });
-    const r = run([
-      'record-concept',
-      '--session-dir', sessionDir,
-      '--concept-id', 'transactions',
-      '--unit-id', 'data_consistency',
-      '--action', 'taught',
-      '--grade', '3',
-      '--notes', 'wrong action',
-      '--registry-path', registryPath,
-      '--profile-dir', profileDir,
-    ]);
-    assert.equal(r.status, 2);
-    const err = JSON.parse(r.stderr);
-    assert.equal(err.error.level, 'blocking');
-    assert.match(err.error.message, /Invalid action taught for status skip/);
-  });
-
   it('blocks on invalid --action vocabulary', () => {
     setupPhase1();
     const r = run([
@@ -322,6 +297,35 @@ describe('whiteboard.js record-concept — happy path', () => {
     assert.equal(last.notes, 'Taught transactions via bank analogy');
     assert.equal(last.phase, 1);
     assert.equal(last.unit_id, 'data_consistency');
+  });
+
+  it('accepts valid action even when live FSRS status has advanced (regression: issue 4)', () => {
+    setupPhase1();
+    // Simulate post-update.js state: profile now has skip-level stability.
+    // Before the fix, record-concept would re-fetch this and reject "taught".
+    const yesterday = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    addProfile('transactions', 'distributed_systems', {
+      last_reviewed: yesterday,
+      review_history: [{ date: yesterday, grade: 4 }],
+      fsrs_stability: 10000,
+    });
+    const r = run([
+      'record-concept',
+      '--session-dir', sessionDir,
+      '--concept-id', 'transactions',
+      '--unit-id', 'data_consistency',
+      '--action', 'taught',
+      '--grade', '3',
+      '--notes', 'Taught after FSRS already advanced to skip',
+      '--registry-path', registryPath,
+      '--profile-dir', profileDir,
+    ]);
+    // Should succeed: record-concept does not re-validate live FSRS status.
+    assert.equal(r.status, 0, `stderr: ${r.stderr}`);
+    const out = JSON.parse(r.stdout);
+    assert.equal(out.data.recorded, true);
+    const state = readState();
+    assert.equal(state.concepts_checked[0].action, 'taught');
   });
 
   it('phase 2 component seed; action=reviewed, status=review → appends both top-level and component concepts_checked', () => {

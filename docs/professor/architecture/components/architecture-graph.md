@@ -1,18 +1,10 @@
 # Architecture Graph
 
 ## Description
-Scans codebase, detects architectural changes, and generates component graph and analysis manifests.
-
-## Concepts Involved
-- `complexity_analysis`
-- `layered_architecture`
-- `domain_driven_design`
+Codebase scanning, component creation with frontmatter, and change detection
 
 ## Depends On
-- [[shared-utilities]]
-
-## Depended On By
-- [[git-change-detection]]
+- [[file-io-utilities]]
 
 ## Key Files
 - scripts/graph.js

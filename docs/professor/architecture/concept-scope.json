@@ -1,6 +1,9 @@
 {
   "relevant_domains": [
+    "algorithms_data_structures",
     "architecture",
+    "operating_systems",
+    "security",
     "software_construction",
     "testing"
   ],
@@ -15,14 +18,23 @@
     "git"
   ],
   "detected_patterns": [
-    "design_patterns",
-    "repository_pattern",
-    "domain_driven_design",
+    "graphs",
+    "graph_traversal",
     "layered_architecture",
     "event_driven_architecture",
-    "state_machine",
-    "gate_based_flow_control"
+    "design_patterns",
+    "domain_driven_design",
+    "session_management",
+    "file_systems",
+    "cpu_scheduling",
+    "process_scheduling_policies",
+    "version_control",
+    "unit_testing",
+    "integration_testing",
+    "contract_testing",
+    "test_driven_development",
+    "reinforcement_learning"
   ],
   "generated_from": "analyze-architecture",
-  "last_updated": "2026-04-11T09:30:00Z"
+  "last_updated": "2026-04-21T00:00:00.000Z"
 }

@@ -1,0 +1,28 @@
+{
+  "name": "l1_reinvention_consistent_hashing",
+  "category": "l1_reinvention",
+  "candidate": {
+    "id": "consistent_hash_ring",
+    "description": "Hash-ring-based partitioning that minimizes key remapping when nodes are added or removed; commonly used for sharded caches and distributed databases.",
+    "proposed_parent": "partitioning",
+    "proposed_domain": "distributed_systems"
+  },
+  "candidates_full": [
+    {
+      "id": "consistent_hashing",
+      "kind": "l1",
+      "domain": "distributed_systems",
+      "full_description": "Hash-based key-to-node mapping arranged on a ring such that adding or removing a node only remaps keys near the affected segment, minimizing data movement during cluster topology changes. Commonly extended with virtual nodes for load balance."
+    },
+    {
+      "id": "range_partitioning",
+      "kind": "l2",
+      "parent": "partitioning",
+      "domain": "distributed_systems",
+      "full_description": "Partitioning data by contiguous key ranges; supports range scans but is prone to hot spots."
+    }
+  ],
+  "expected_match": "l1_instead",
+  "expected_matched_id": "consistent_hashing",
+  "expected_confidence_min": 0.7
+}

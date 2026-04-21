@@ -1,0 +1,23 @@
+{
+  "name": "edge_long_description",
+  "category": "edge",
+  "candidate": {
+    "id": "adaptive_concurrency_control",
+    "description": "Adaptive concurrency control dynamically tunes the number of in-flight requests a service permits based on observed latency, error rate, and downstream backpressure signals. Unlike static thread pools or fixed-size semaphores, adaptive controllers (such as Netflix's concurrency-limits library, TCP-style additive-increase multiplicative-decrease loops, and Little's-law-derived setpoints) react to changing load conditions in real time. The controller maintains an estimate of the optimal concurrency limit, increases it gradually under healthy conditions, and decreases it aggressively when latency exceeds a target percentile or error rate spikes. Compared to static throttling and circuit breakers, this approach avoids both under-utilization and overload, providing a self-regulating safety mechanism for upstream and downstream service interaction.",
+    "proposed_parent": "throttling",
+    "proposed_domain": "performance_scalability"
+  },
+  "universe_thin": {
+    "l2s": [
+      { "id": "rate_limiting", "parent": "throttling", "scope_1line": "Capping requests per unit time per client, key, or endpoint." },
+      { "id": "circuit_breaker", "parent": "throttling", "scope_1line": "Failing fast when downstream is unhealthy; trips and resets via half-open probes." },
+      { "id": "bulkhead_isolation", "parent": "throttling", "scope_1line": "Partitioning resources so one failing tenant cannot exhaust shared pools." }
+    ],
+    "l1s": [
+      { "id": "throttling", "domain": "performance_scalability", "scope_1line": "Limiting request rates and concurrency to protect services." },
+      { "id": "load_balancing", "domain": "performance_scalability", "scope_1line": "Distributing work across servers using algorithms and health checks." }
+    ]
+  },
+  "expected_top_candidate_ids": ["rate_limiting", "circuit_breaker"],
+  "min_confidence": 0.4
+}

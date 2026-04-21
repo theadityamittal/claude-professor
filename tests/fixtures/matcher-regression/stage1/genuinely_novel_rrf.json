@@ -1,0 +1,22 @@
+{
+  "name": "genuinely_novel_rrf",
+  "category": "genuinely_novel",
+  "candidate": {
+    "id": "reciprocal_rank_fusion",
+    "description": "Combining multiple ranked lists by summing reciprocal ranks of each document; robust to score-scale mismatch between rankers.",
+    "proposed_parent": "full_text_search",
+    "proposed_domain": "databases"
+  },
+  "universe_thin": {
+    "l2s": [
+      { "id": "bm25_scoring", "parent": "full_text_search", "scope_1line": "Probabilistic lexical scoring with term saturation and length normalization." },
+      { "id": "learning_to_rank", "parent": "full_text_search", "scope_1line": "Supervised ranking models combining many signals." }
+    ],
+    "l1s": [
+      { "id": "full_text_search", "domain": "databases", "scope_1line": "Searching documents by text content using inverted indices." },
+      { "id": "retrieval_augmented_gen", "domain": "machine_learning", "scope_1line": "Grounding LLM responses with retrieved documents." }
+    ]
+  },
+  "expected_top_candidate_ids": ["learning_to_rank", "bm25_scoring"],
+  "min_confidence": 0.3
+}

@@ -1,0 +1,27 @@
+{
+  "name": "l1_reinvention_consensus",
+  "category": "l1_reinvention",
+  "candidate": {
+    "id": "agreement_protocols",
+    "description": "Algorithms enabling unreliable distributed nodes to agree on a single value despite failures and partitions; covers Paxos, Raft, Zab, and Byzantine variants.",
+    "proposed_parent": "leader_election",
+    "proposed_domain": "distributed_systems"
+  },
+  "candidates_full": [
+    {
+      "id": "consensus",
+      "kind": "l1",
+      "domain": "distributed_systems",
+      "full_description": "Family of algorithms (Paxos, Raft, Zab, PBFT) by which a set of unreliable nodes can agree on a single value or sequence of values despite crashes, network partitions, or in some variants Byzantine behavior. Foundational to replicated state machines."
+    },
+    {
+      "id": "leader_election",
+      "kind": "l1",
+      "domain": "distributed_systems",
+      "full_description": "Selecting a single coordinator among replicas; often a sub-step of consensus protocols."
+    }
+  ],
+  "expected_match": "l1_instead",
+  "expected_matched_id": "consensus",
+  "expected_confidence_min": 0.7
+}

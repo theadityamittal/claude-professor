@@ -1,0 +1,23 @@
+{
+  "name": "same_parent_drift_twopc",
+  "category": "same_parent_drift",
+  "candidate": {
+    "id": "2pc_protocol",
+    "description": "Coordinator-driven atomic commit across multiple participants: prepare phase collects votes, commit phase finalizes if all voted yes, otherwise abort.",
+    "proposed_parent": "distributed_transactions",
+    "proposed_domain": "distributed_systems"
+  },
+  "universe_thin": {
+    "l2s": [
+      { "id": "two_phase_commit", "parent": "distributed_transactions", "scope_1line": "Blocking atomic commit protocol with prepare and commit phases across participants." },
+      { "id": "three_phase_commit", "parent": "distributed_transactions", "scope_1line": "Non-blocking extension of 2PC adding a pre-commit phase." },
+      { "id": "saga_orchestration", "parent": "distributed_transactions", "scope_1line": "Coordinated long-running transactions via compensating actions." }
+    ],
+    "l1s": [
+      { "id": "distributed_transactions", "domain": "distributed_systems", "scope_1line": "Transactions spanning multiple services or databases." },
+      { "id": "consensus", "domain": "distributed_systems", "scope_1line": "Agreement protocols across unreliable nodes." }
+    ]
+  },
+  "expected_top_candidate_ids": ["two_phase_commit"],
+  "min_confidence": 0.7
+}

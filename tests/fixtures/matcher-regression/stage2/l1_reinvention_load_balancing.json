@@ -1,0 +1,27 @@
+{
+  "name": "l1_reinvention_load_balancing",
+  "category": "l1_reinvention",
+  "candidate": {
+    "id": "request_distribution_layer",
+    "description": "Layer that spreads incoming requests across a pool of backend servers using round-robin, least-connections, or weighted policies, with health checks to evict failing nodes.",
+    "proposed_parent": "horizontal_scaling",
+    "proposed_domain": "performance_scalability"
+  },
+  "candidates_full": [
+    {
+      "id": "load_balancing",
+      "kind": "l1",
+      "domain": "performance_scalability",
+      "full_description": "Distributing incoming work across multiple servers using algorithms (round-robin, least-connections, hash-based) and health checks; central building block of horizontally scaled systems. Includes L4 vs L7 LB, sticky sessions, and reverse-proxy deployments."
+    },
+    {
+      "id": "horizontal_scaling",
+      "kind": "l1",
+      "domain": "performance_scalability",
+      "full_description": "Adding more servers (rather than bigger ones) to handle load; usually requires load balancing and stateless services."
+    }
+  ],
+  "expected_match": "l1_instead",
+  "expected_matched_id": "load_balancing",
+  "expected_confidence_min": 0.7
+}

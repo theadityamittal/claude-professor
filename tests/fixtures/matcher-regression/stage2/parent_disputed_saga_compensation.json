@@ -1,0 +1,28 @@
+{
+  "name": "parent_disputed_saga_compensation",
+  "category": "parent_disputed",
+  "candidate": {
+    "id": "saga_compensation",
+    "description": "Compensating actions that semantically undo a previously committed step in a long-running saga when a downstream step fails.",
+    "proposed_parent": "acid_transactions",
+    "proposed_domain": "databases"
+  },
+  "candidates_full": [
+    {
+      "id": "acid_transactions",
+      "kind": "l1",
+      "domain": "databases",
+      "full_description": "ACID property guarantees (atomicity, consistency, isolation, durability) provided by traditional RDBMSes; scope is a single database transaction, not cross-service workflows."
+    },
+    {
+      "id": "saga_pattern",
+      "kind": "l1",
+      "domain": "distributed_systems",
+      "full_description": "Long-running multi-service workflow modeled as a sequence of local transactions, each with a compensating action invoked on downstream failure to undo prior steps."
+    }
+  ],
+  "expected_match": "parent_disputed",
+  "expected_matched_id": null,
+  "expected_suggested_parent": "saga_pattern",
+  "expected_confidence_min": 0.7
+}

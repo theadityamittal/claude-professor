@@ -1,0 +1,29 @@
+{
+  "name": "edge_long_description_circuit_breaker",
+  "category": "edge",
+  "candidate": {
+    "id": "circuit_breaker_with_half_open_probes",
+    "description": "Circuit breakers protect a caller from a failing downstream by tracking error rate over a sliding window and short-circuiting requests once a threshold is exceeded. After a configurable cooldown period, the breaker enters a half-open state, admitting a small probe of requests to test downstream health; success closes the breaker fully, while failure re-opens it for another cooldown. Modern implementations distinguish slow calls (latency > p99 target) from explicit failures, pair the breaker with a bulkhead to bound resource use during outages, and emit metrics for breaker state transitions so operators can correlate them with downstream incidents. The closed/open/half-open state machine is foundational to resilience libraries such as Hystrix, resilience4j, and Polly, and is a standard pattern in service mesh sidecars.",
+    "proposed_parent": "throttling",
+    "proposed_domain": "performance_scalability"
+  },
+  "candidates_full": [
+    {
+      "id": "circuit_breaker",
+      "kind": "l2",
+      "parent": "throttling",
+      "domain": "performance_scalability",
+      "full_description": "Resilience pattern that monitors downstream failure rate and trips into an open state to fail fast, then probes recovery via a half-open state before closing. Standard component of every resilience library."
+    },
+    {
+      "id": "rate_limiting",
+      "kind": "l2",
+      "parent": "throttling",
+      "domain": "performance_scalability",
+      "full_description": "Capping requests per unit time per key; complementary but not the same as failure-driven short-circuiting."
+    }
+  ],
+  "expected_match": "semantic_l2",
+  "expected_matched_id": "circuit_breaker",
+  "expected_confidence_min": 0.8
+}

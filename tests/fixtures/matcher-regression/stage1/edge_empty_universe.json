@@ -1,0 +1,16 @@
+{
+  "name": "edge_empty_universe",
+  "category": "edge",
+  "candidate": {
+    "id": "saga_compensation",
+    "description": "Compensating actions that semantically undo a step in a saga when a downstream step fails.",
+    "proposed_parent": "saga_pattern",
+    "proposed_domain": "distributed_systems"
+  },
+  "universe_thin": {
+    "l2s": [],
+    "l1s": []
+  },
+  "expected_top_candidate_ids": [],
+  "min_confidence": 0.0
+}

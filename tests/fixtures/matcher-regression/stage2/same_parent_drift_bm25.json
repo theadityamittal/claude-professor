@@ -1,0 +1,29 @@
+{
+  "name": "same_parent_drift_bm25",
+  "category": "same_parent_drift",
+  "candidate": {
+    "id": "bm25_scoring",
+    "description": "Probabilistic ranking function for full-text search using term frequency saturation, document length normalization, and inverse document frequency.",
+    "proposed_parent": "full_text_search",
+    "proposed_domain": "databases"
+  },
+  "candidates_full": [
+    {
+      "id": "bm25_ranking",
+      "kind": "l2",
+      "parent": "full_text_search",
+      "domain": "databases",
+      "full_description": "Best Match 25 ranking algorithm: probabilistic, parameterized by k1 (term saturation) and b (length normalization). Default scorer in Lucene/Elasticsearch since 5.x."
+    },
+    {
+      "id": "tfidf_scoring",
+      "kind": "l2",
+      "parent": "full_text_search",
+      "domain": "databases",
+      "full_description": "Classic term-frequency × inverse-document-frequency weighting; precursor to BM25 without saturation or length normalization."
+    }
+  ],
+  "expected_match": "semantic_l2",
+  "expected_matched_id": "bm25_ranking",
+  "expected_confidence_min": 0.8
+}

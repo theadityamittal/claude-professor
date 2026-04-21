@@ -47,12 +47,14 @@ Supports `--update` (refresh) and `--branch {name}` (delta from base).
 
 Teaches a single concept inline in the whiteboard conversation (the user sees the teaching directly — it is never dispatched as a background subagent). Structured output contract:
 
-1. **Analogy** (~100 words) — concrete, visual everyday comparison
-2. **Real-world production example** (~150 words) — how it's used at scale
-3. **Task connection** (~100 words) — tied to what you're building
-4. **Recall question** — application, not definition
+1. **Analogy** (~100 words) — concrete, visual everyday comparison; always synthetic
+2. **Real-world production example** (~150 words) — grounded in a web search anchor snippet if available, otherwise from training data
+3. **Task connection** (~100 words) — tied to what you're building; references same anchor snippet for coherence
+4. **Recall question** — application, not definition; grounded in same anchor scenario
 
 Action (`taught` / `reviewed` / `skipped`) is determined by FSRS status from `lookup.js concept-state`. Writes notes into the concept's `## Teaching Guide` section.
+
+**Web search integration (v5.1):** The whiteboard skill prefetches one search result per concern at `phase-start` and passes it to professor-teach via `--search-results`. Professor-teach selects a single anchor snippet (concept-match then task-context domain as tiebreaker) and threads it through the real-world example, task connection, and recall question blocks. On degradation (empty, malformed, or timed-out results), an inline signal appears at the top of teaching output with the specific failure reason and search query — teaching always continues from training data.
 
 ## What It Is NOT
 
@@ -320,6 +322,9 @@ Reviewed in context of RAG pipeline optimization. Recall improved on overlap str
 | FSRS-5 spaced repetition | Scientifically-backed review scheduling. Deterministic math in Node.js. |
 | Markdown with JSON frontmatter | LLMs read markdown natively. JSON frontmatter for deterministic script parsing. |
 | Three-tier error envelope | Plugin has stateful learning tracking — silent failures mean data loss, not just degraded output. |
+| Per-concern web search prefetch | One search fired per concern at `phase-start`, shared across all concepts in that concern. Cost scales with concern count (5-8/session), not concept count. Freshness is the value — no caching. |
+| One-anchor model for search injection | A single best snippet (concept-match first, task-context domain as tiebreaker) is threaded through real-world example, task connection, and recall question. Analogy is always synthetic. Coherence across blocks over variety. |
+| Graceful degradation, never abort | On empty, malformed, or parse-failed search results: emit an inline signal at the top of teaching output (specific failure + query), then teach from training data. Teaching is never withheld due to search failure. |
 
 ## Migrating from v4
 

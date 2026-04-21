@@ -157,7 +157,7 @@ node ${CLAUDE_PLUGIN_ROOT}/scripts/whiteboard.js register-selection \
     --notes "<notes_for_session_log>"
   ```
 
-  `action` is one of `taught | reviewed | known_baseline | skipped_not_due`. The script validates the action against the FSRS status it issued in step a and rejects mismatches.
+  `action` is one of `taught | reviewed | known_baseline | skipped_not_due`. Pass the action that matches the FSRS status returned by next-concern/next-component — the script trusts the caller to pass the correct action.
 
   **c. Discuss the concern.** Now that every relevant concept is fresh in the user's mind, lead a short focused discussion of the concern. Surface tradeoffs, ask for the user's preference, debate constructively. Stay grounded in the just-taught concepts — name them explicitly when invoking them.
 

@@ -268,9 +268,10 @@ node ${CLAUDE_PLUGIN_ROOT}/scripts/whiteboard.js register-components \
     {
       "id":"ingestion_pipeline",
       "description":"Document chunking, embedding, indexing into pgvector",
-      "seeds":["batch_processing","embedding_models","vector_indexes"],
-      "l2_decisions":[
-        {"proposed":"chunking_strategy","action":"accept_novel","parent":"text_processing"}
+      "concepts_seed":["batch_processing","embedding_models","vector_indexes"],
+      "concepts_proposed":[{"id":"chunking_strategy","parent":"text_processing"}],
+      "L2_decisions":[
+        {"proposed":"chunking_strategy","decision":"accept_novel"}
       ]
     }
   ]'

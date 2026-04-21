@@ -81,6 +81,23 @@ Action (`taught` / `reviewed` / `skipped`) is determined by FSRS status from `lo
 - Claude Code CLI
 - Node.js (already required by Claude Code — no additional dependencies)
 
+### Known Limitation: Opus 4.7 (1M context) sessions
+
+If your Claude Code session is running on **Opus 4.7 with 1M context**, invoking `/whiteboard` or `/analyze-architecture` will fail with:
+
+```
+API Error: Extra usage is required for 1M context · run /extra-usage to enable,
+or /model to switch to standard context
+```
+
+This is an upstream Claude Code behavior, not a plugin issue. When a session is bound to a 1M-context model, **every skill invocation inherits that window**, and skill frontmatter cannot downgrade it (see [anthropics/claude-code#45847](https://github.com/anthropics/claude-code/issues/45847), [#45390](https://github.com/anthropics/claude-code/issues/45390)).
+
+**Workaround:** before invoking either skill, do one of:
+- `/model` → switch to a standard-context model (e.g. Sonnet 4.6), or
+- `/extra-usage` → opt in to extra-usage billing for the session
+
+On Max/Team/Enterprise plans the 1M context is bundled and the billing gate firing is a documented Anthropic bug — if affected, report it via the linked issues.
+
 ## Usage
 
 ### Design Conversation

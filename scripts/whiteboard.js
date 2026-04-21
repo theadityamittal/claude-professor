@@ -37,6 +37,11 @@ require('./whiteboard/next-component')(register);
 require('./whiteboard/record-concept')(register);
 require('./whiteboard/record-discussion')(register);
 
+// Unit closers + remediation (T-SCRIPT-5 batch 3).
+require('./whiteboard/mark-concern-done')(register);
+require('./whiteboard/mark-component-done')(register);
+require('./whiteboard/mark-skipped')(register);
+
 function main(argv) {
   const sub = argv[0];
   if (!sub) {

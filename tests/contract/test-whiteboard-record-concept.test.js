@@ -126,8 +126,6 @@ describe('whiteboard.js record-concept — validation', () => {
       '--unit-id', 'data_consistency',
       '--action', 'taught',
       '--grade', '3',
-      '--registry-path', registryPath,
-      '--profile-dir', profileDir,
     ]);
     assert.equal(r.status, 2);
     const err = JSON.parse(r.stderr);
@@ -146,8 +144,6 @@ describe('whiteboard.js record-concept — validation', () => {
       '--action', 'taught',
       '--grade', '3',
       '--notes', 'Taught via X analogy',
-      '--registry-path', registryPath,
-      '--profile-dir', profileDir,
     ]);
     assert.equal(r.status, 2);
     const err = JSON.parse(r.stderr);
@@ -165,8 +161,6 @@ describe('whiteboard.js record-concept — validation', () => {
       '--action', 'taught',
       '--grade', '3',
       '--notes', 'Taught via X analogy',
-      '--registry-path', registryPath,
-      '--profile-dir', profileDir,
     ]);
     assert.equal(r.status, 2);
     const err = JSON.parse(r.stderr);
@@ -184,8 +178,6 @@ describe('whiteboard.js record-concept — validation', () => {
       '--action', 'taught',
       '--grade', '3',
       '--notes', 'Taught via X analogy',
-      '--registry-path', registryPath,
-      '--profile-dir', profileDir,
     ]);
     assert.equal(r.status, 2);
     const err = JSON.parse(r.stderr);
@@ -202,8 +194,6 @@ describe('whiteboard.js record-concept — validation', () => {
       '--unit-id', 'data_consistency',
       '--action', 'taught',
       '--notes', 'Taught via X analogy',
-      '--registry-path', registryPath,
-      '--profile-dir', profileDir,
     ]);
     assert.equal(r.status, 2);
     const err = JSON.parse(r.stderr);
@@ -228,8 +218,6 @@ describe('whiteboard.js record-concept — validation', () => {
       '--action', 'skipped_not_due',
       '--grade', '2',
       '--notes', 'skip per FSRS',
-      '--registry-path', registryPath,
-      '--profile-dir', profileDir,
     ]);
     assert.equal(r.status, 2);
     const err = JSON.parse(r.stderr);
@@ -247,8 +235,6 @@ describe('whiteboard.js record-concept — validation', () => {
       '--action', 'garbage',
       '--grade', '3',
       '--notes', 'x',
-      '--registry-path', registryPath,
-      '--profile-dir', profileDir,
     ]);
     assert.equal(r.status, 2);
     const err = JSON.parse(r.stderr);
@@ -269,8 +255,6 @@ describe('whiteboard.js record-concept — happy path', () => {
       '--action', 'taught',
       '--grade', '3',
       '--notes', 'Taught transactions via bank analogy',
-      '--registry-path', registryPath,
-      '--profile-dir', profileDir,
     ]);
     assert.equal(r.status, 0, `stderr: ${r.stderr}`);
     const out = JSON.parse(r.stdout);
@@ -317,8 +301,6 @@ describe('whiteboard.js record-concept — happy path', () => {
       '--action', 'taught',
       '--grade', '3',
       '--notes', 'Taught after FSRS already advanced to skip',
-      '--registry-path', registryPath,
-      '--profile-dir', profileDir,
     ]);
     // Should succeed: record-concept does not re-validate live FSRS status.
     assert.equal(r.status, 0, `stderr: ${r.stderr}`);
@@ -363,8 +345,6 @@ describe('whiteboard.js record-concept — happy path', () => {
       '--unit-id', 'retrieval',
       '--action', action,
       '--notes', 'Reviewed IR basics',
-      '--registry-path', registryPath,
-      '--profile-dir', profileDir,
     ];
     if (needsGrade) args.push('--grade', '3');
 

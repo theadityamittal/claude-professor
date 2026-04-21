@@ -7,13 +7,20 @@ const fs = require('node:fs');
 const path = require('node:path');
 const os = require('node:os');
 
-const SESSION_SCRIPT = path.join(__dirname, '..', '..', 'scripts', 'session.js');
 const GATE_SCRIPT = path.join(__dirname, '..', '..', 'scripts', 'gate.js');
 let testDir;
 
 beforeEach(() => {
   testDir = fs.mkdtempSync(path.join(os.tmpdir(), 'contract-gate-'));
-  execFileSync('node', [SESSION_SCRIPT, 'create', '--session-dir', testDir, '--feature', 'test', '--branch', 'main'], { encoding: 'utf-8' });
+  // Minimal v5 session state directly; session.js migration to v5 is handled in T-SCRIPT-4.
+  fs.writeFileSync(
+    path.join(testDir, '.session-state.json'),
+    JSON.stringify({
+      schema_version: 5,
+      phases: { '1': { status: 'in_progress', concerns: [] } },
+      concepts_checked: [],
+    }),
+  );
 });
 
 afterEach(() => {
@@ -34,22 +41,21 @@ function runExpectFail(args) {
   }
 }
 
-describe('gate.js contract', () => {
-  it('schedule returns envelope with scheduled count', () => {
-    const concepts = JSON.stringify([{ concept_id: 'x', domain: 'y', status: 'new', step: 'phase1_checkpoint1' }]);
-    const output = run(['schedule', '--session-dir', testDir, '--phase', '1', '--concepts', concepts]);
+describe('gate.js contract (v5)', () => {
+  it('checkpoint returns envelope with passed/blocked result, missing, counts, timestamp', () => {
+    const output = run(['checkpoint', '--session-dir', testDir, '--step', '1']);
     assert.strictEqual(output.status, 'ok');
-    assert.strictEqual(typeof output.data.scheduled, 'number');
-    assert.strictEqual(typeof output.data.total, 'number');
+    assert.ok(['passed', 'blocked'].includes(output.data.result));
+    assert.ok(Array.isArray(output.data.missing));
+    assert.strictEqual(typeof output.data.scheduled_count, 'number');
+    assert.strictEqual(typeof output.data.checked_count, 'number');
+    assert.ok(output.data.timestamp);
     assert.strictEqual('error' in output, false);
   });
 
-  it('checkpoint returns envelope with result and missing', () => {
-    const output = run(['checkpoint', '--session-dir', testDir, '--step', 'phase1_checkpoint1']);
-    assert.strictEqual(output.status, 'ok');
-    assert.ok(['passed', 'blocked', 'degraded'].includes(output.data.result));
-    assert.ok(Array.isArray(output.data.missing));
-    assert.strictEqual('error' in output, false);
+  it('checkpoint never returns degraded result (circuit_breaker is removed)', () => {
+    const output = run(['checkpoint', '--session-dir', testDir, '--step', '1']);
+    assert.notStrictEqual(output.data.result, 'degraded');
   });
 
   it('log returns envelope with logged true', () => {
@@ -59,12 +65,13 @@ describe('gate.js contract', () => {
     assert.strictEqual(output.data.logged, true);
   });
 
-  it('status returns envelope with schedule, checkpoints, circuit', () => {
+  it('status returns envelope with phases and concepts_checked', () => {
     const output = run(['status', '--session-dir', testDir]);
     assert.strictEqual(output.status, 'ok');
-    assert.ok(Array.isArray(output.data.schedule));
-    assert.ok(Array.isArray(output.data.checkpoints));
-    assert.ok(['closed', 'open', 'half-open'].includes(output.data.circuit));
+    assert.ok(output.data.phases);
+    assert.ok(Array.isArray(output.data.concepts_checked));
+    // circuit field removed in v5
+    assert.strictEqual('circuit' in output.data, false);
   });
 
   it('error returns envelope with error object', () => {
@@ -74,5 +81,16 @@ describe('gate.js contract', () => {
     assert.ok(output.error.level);
     assert.ok(output.error.message);
     assert.strictEqual('data' in output, false);
+  });
+
+  it('schedule subcommand is removed (blocking error)', () => {
+    const output = runExpectFail(['schedule', '--session-dir', testDir, '--phase', '1', '--concepts', '[]']);
+    assert.strictEqual(output.status, 'error');
+    assert.strictEqual(output.error.level, 'blocking');
+  });
+
+  it('--force-proceed flag is rejected on checkpoint', () => {
+    const output = runExpectFail(['checkpoint', '--session-dir', testDir, '--step', '1', '--force-proceed']);
+    assert.strictEqual(output.status, 'error');
   });
 });

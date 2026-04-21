@@ -33,6 +33,10 @@ require('./whiteboard/register-components')(register);
 require('./whiteboard/next-concern')(register);
 require('./whiteboard/next-component')(register);
 
+// Recorders (T-SCRIPT-5 batch 3).
+require('./whiteboard/record-concept')(register);
+require('./whiteboard/record-discussion')(register);
+
 function main(argv) {
   const sub = argv[0];
   if (!sub) {

@@ -8,6 +8,19 @@ trap "rm -rf $WORK" EXIT
 
 cp -R tests/fixtures/profiles-v4/. "$WORK/"
 
+# Dry run must NOT mutate files — snapshot + compare after
+SNAPSHOT=$(mktemp -d)
+trap "rm -rf $WORK $SNAPSHOT" EXIT
+cp -R "$WORK/." "$SNAPSHOT/"
+
+out=$(node scripts/migrate-v5.js --profile-dir "$WORK" --dry-run)
+echo "$out" | jq -e '.status == "ok" and .data.dry_run == true' > /dev/null
+files_migrated_dry=$(echo "$out" | jq -r '.data.files_migrated')
+[[ "$files_migrated_dry" -ge 4 ]]
+
+# Confirm dry-run didn't actually write
+diff -r "$WORK" "$SNAPSHOT" > /dev/null || { echo "FAIL: --dry-run mutated files"; exit 1; }
+
 # Run migration
 out=$(node scripts/migrate-v5.js --profile-dir "$WORK")
 echo "$out" | jq -e '.status == "ok"' > /dev/null

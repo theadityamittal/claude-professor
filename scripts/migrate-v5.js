@@ -50,7 +50,7 @@ function buildTeachingGuide(notes, keyPoints) {
   return lines.join('\n');
 }
 
-function migrateOne(filePath) {
+function migrateOne(filePath, { dryRun = false } = {}) {
   const raw = fs.readFileSync(filePath, 'utf-8');
   let parsed;
   try { parsed = parseV4(raw); }
@@ -69,7 +69,7 @@ function migrateOne(filePath) {
   newFm.schema_version = 5;
 
   const newBody = `\n## Description\n\n${description}\n\n## Teaching Guide\n\n${teachingGuide}\n`;
-  writeMarkdownFile(filePath, newFm, newBody);
+  if (!dryRun) writeMarkdownFile(filePath, newFm, newBody);
 
   return {
     status: 'migrated',
@@ -85,9 +85,10 @@ function main(argv) {
   const dir = expandHome(args['profile-dir']);
   if (!fs.existsSync(dir)) return [envelopeError('blocking', `profile-dir not found: ${dir}`), 2];
 
+  const dryRun = !!args['dry-run'];
   const files = walkMd(dir);
   const results = files.map(f => {
-    try { return migrateOne(f); }
+    try { return migrateOne(f, { dryRun }); }
     catch (e) { return { status: 'error', path: f, reason: e.message }; }
   });
 

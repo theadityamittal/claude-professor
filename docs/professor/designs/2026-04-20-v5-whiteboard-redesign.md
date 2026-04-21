@@ -233,7 +233,8 @@ No more `degraded` state. No circuit breaker.
 
 - Every `mapped_seeds` entry exists in registry
 - Every L1 in registry appears in at least one concern (no orphan seeds)
-- No L1 appears in more than 3 concerns (no over-mapping)
+- No L1 appears in more than 4 concerns (prevents over-claiming while allowing L1s that legitimately span topics like `caching_strategies` → caching + cost + scalability + performance)
+- Each concern has ≥ 3 mapped seeds (narrower concerns lack teaching depth); no upper cap (some concerns like `data_consistency` or `security_and_secrets` legitimately span 15+ L1s)
 - All concern IDs are unique
 - Catalog count: 15-25 concerns (research-determined; not strictly enforced)
 
@@ -467,10 +468,10 @@ Aim: 15-25 concerns at "meeting-topic" level — broader than specific patterns,
 
 ### 4.4 Seed mapping rules
 
-For each concern, select 3-8 registry L1 concepts:
+For each concern, select L1 concepts from the registry (minimum 3, no upper cap):
 
-1. **Coverage:** every registry L1 maps to at least one concern (run `validate-concerns.js`)
-2. **Bounded:** any L1 maps to at most 3 concerns
+1. **Coverage:** every registry L1 maps to at least one concern (run `validate-concerns.js`). With 407 L1s and ~19 concerns, average mapping load is ~21 seeds per concern; concerns that are naturally narrow (e.g., `caching`) have fewer, broad ones (e.g., `data_consistency`) have more.
+2. **Bounded:** any L1 maps to at most 4 concerns (prevents dilution while allowing legit cross-cutting L1s)
 3. **Reasoning:** include per-seed rationale in `data/concerns-mapping-notes.md` (sibling file, human-readable)
 
 Mapping is done by Claude with full registry in context, reviewed by maintainer in PR. The mapping-notes file makes the rationale auditable.

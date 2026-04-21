@@ -213,6 +213,31 @@ function finish(sessionDir) {
   return { verified: true, warnings };
 }
 
+/**
+ * migrate-from-v4: v5 sessions reply with `already_v5`; v4 (or missing) rejects.
+ * Intentionally no auto-migration — v5 model is too different from v4.
+ */
+function migrateFromV4(sessionDir) {
+  const sessionPath = getSessionPath(sessionDir);
+  const state = readJSON(sessionPath);
+  if (!state) {
+    const e = new Error('no state file to migrate');
+    e.blocking = true;
+    throw e;
+  }
+  if (state.schema_version === SCHEMA_VERSION) {
+    return { already_v5: true };
+  }
+  // v4 (or unknown) — emit discard guidance to stderr, then blocking error.
+  process.stderr.write(
+    'v4 session detected. Auto-migration is not supported (different model). ' +
+    'Recommend: discard state and restart with `whiteboard.js init-session --force-new`.\n'
+  );
+  const e = new Error('v4 sessions cannot be auto-migrated; please discard');
+  e.blocking = true;
+  throw e;
+}
+
 if (require.main === module) {
   const mode = process.argv[2];
   const args = parseArgs(process.argv.slice(3));
@@ -279,8 +304,12 @@ if (require.main === module) {
         validateArgs(['session-dir'], 'finish --session-dir PATH');
         result = finish(args['session-dir']);
         break;
+      case 'migrate-from-v4':
+        validateArgs(['session-dir'], 'migrate-from-v4 --session-dir PATH');
+        result = migrateFromV4(args['session-dir']);
+        break;
       default:
-        writeBlocking(`Unknown subcommand: ${mode}. Use create, load, update, add-concept, finish, or clear.`);
+        writeBlocking(`Unknown subcommand: ${mode}. Use create, load, update, add-concept, finish, clear, or migrate-from-v4.`);
     }
     process.stdout.write(JSON.stringify(envelope(result), null, 2) + '\n');
   } catch (err) {
@@ -294,4 +323,4 @@ if (require.main === module) {
   }
 }
 
-module.exports = { create, load, update, addConcept, finish, clear, computeConcernsCatalogVersion };
+module.exports = { create, load, update, addConcept, finish, clear, migrateFromV4, computeConcernsCatalogVersion };

@@ -150,7 +150,7 @@ node ${CLAUDE_PLUGIN_ROOT}/scripts/whiteboard.js register-selection \
   ```bash
   node ${CLAUDE_PLUGIN_ROOT}/scripts/whiteboard.js record-concept \
     --session-dir docs/professor/ \
-    --concern-id <concern_id> \
+    --unit-id <concern_id> \
     --concept-id <concept_id> \
     --action <action> \
     --grade <grade> \
@@ -299,14 +299,14 @@ node ${CLAUDE_PLUGIN_ROOT}/scripts/whiteboard.js register-components \
   ```bash
   node ${CLAUDE_PLUGIN_ROOT}/scripts/whiteboard.js record-concept \
     --session-dir docs/professor/ \
-    --component-id ingestion_pipeline \
+    --unit-id ingestion_pipeline \
     --concept-id embedding_models \
     --action reviewed \
     --grade 3 \
     --notes "Reviewed bi-encoder vs cross-encoder; user recalled the latency tradeoff."
   ```
 
-  Use `--concern-id` in Phase 1 and `--component-id` in Phase 2/3.
+  Use `--unit-id` for both Phase 1 concerns and Phase 2/3 components.
 
   **c. Discuss the component** grounded in the just-taught concepts.
 

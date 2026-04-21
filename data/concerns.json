@@ -1,0 +1,338 @@
+{
+  "schema_version": 5,
+  "concerns": {
+    "data_modeling": {
+      "description": "Shape, constraints, and indexes of persistent data — how information is stored, retrieved, and evolves.",
+      "keywords": ["schema", "data", "storage", "database", "model", "index", "relation", "document", "denormalize"],
+      "mapped_seeds": [
+        "relational_model", "normalization", "denormalization", "indexing", "storage_engines",
+        "nosql_models", "graph_databases", "time_series_databases", "oltp_vs_olap",
+        "full_text_search", "joins", "materialized_views", "cursor_pagination",
+        "data_lake", "data_warehouse", "lakehouse", "data_serialization",
+        "data_quality", "data_lineage", "data_partitioning", "data_catalog",
+        "schema_evolution"
+      ],
+      "canonical_sources": ["Kleppmann DDIA ch.2-3", "ISO/IEC 25010 functional suitability"]
+    },
+    "api_design": {
+      "description": "Public surface contracts — protocols, versioning, error shapes, and evolvability across clients.",
+      "keywords": ["api", "rest", "graphql", "grpc", "endpoint", "contract", "version", "schema", "client"],
+      "mapped_seeds": [
+        "rest", "graphql", "grpc", "api_versioning", "pagination",
+        "openapi_specification", "resource_modeling", "content_negotiation",
+        "hateoas", "sdk_design", "api_filtering_sorting", "bulk_operations",
+        "api_serialization", "api_authentication"
+      ],
+      "canonical_sources": ["Fielding REST thesis", "ISO/IEC 25010 compatibility"]
+    },
+    "auth_and_authz": {
+      "description": "Who the caller is (authentication) and what they may do (authorization); identity provisioning and session handling.",
+      "keywords": ["auth", "login", "identity", "permission", "role", "token", "session", "oauth"],
+      "mapped_seeds": [
+        "authentication", "authorization", "oauth2", "openid_connect", "jwt",
+        "session_management", "rbac", "access_control", "multi_factor_auth"
+      ],
+      "canonical_sources": ["OWASP ASVS", "OAuth 2.1 RFC"]
+    },
+    "input_validation": {
+      "description": "Safety of data crossing trust boundaries — sanitization, schema enforcement, and defense against injection.",
+      "keywords": ["validation", "sanitize", "input", "injection", "xss", "csrf", "boundary", "untrusted"],
+      "mapped_seeds": [
+        "input_validation", "xss", "csrf", "sql_injection", "cors", "content_security_policy"
+      ],
+      "canonical_sources": ["OWASP Top 10", "OWASP ASVS"]
+    },
+    "caching": {
+      "description": "Keeping frequently-used data close to the caller; invalidation, layering, and staleness trade-offs.",
+      "keywords": ["cache", "memoize", "invalidation", "ttl", "cdn", "hot data"],
+      "mapped_seeds": [
+        "caching_strategies", "cache_invalidation", "cdn", "lazy_loading",
+        "static_site_generation", "incremental_regeneration", "offline_first",
+        "connection_pooling"
+      ],
+      "canonical_sources": ["Kleppmann DDIA ch.3", "AWS Well-Architected performance efficiency"]
+    },
+    "async_processing": {
+      "description": "Work that executes outside the request path — queues, streams, schedulers, and event-driven pipelines.",
+      "keywords": ["async", "queue", "worker", "background", "job", "stream", "event", "batch"],
+      "mapped_seeds": [
+        "async_processing", "message_queues", "batch_processing", "stream_processing",
+        "micro_batching", "workflow_orchestration", "backpressure", "dead_letter_handling",
+        "change_data_capture", "async_await", "event_loop", "coroutines",
+        "futures_and_promises", "thread_pool", "fork_join", "work_stealing",
+        "async_api", "webhook", "processes", "cpu_scheduling",
+        "process_scheduling_policies", "stored_procedures", "triggers", "connection_protocols"
+      ],
+      "canonical_sources": ["Kleppmann DDIA ch.11", "Enterprise Integration Patterns"]
+    },
+    "error_handling": {
+      "description": "Graceful response to failures — exceptions, fallbacks, degraded modes, and user-visible error semantics.",
+      "keywords": ["error", "exception", "fail", "fallback", "degrade", "recover", "retry"],
+      "mapped_seeds": [
+        "error_handling", "graceful_degradation", "circuit_breaker", "bulkhead_pattern",
+        "fault_tolerance", "api_error_handling", "defensive_programming",
+        "failure_detection", "byzantine_fault_tolerance", "split_brain"
+      ],
+      "canonical_sources": ["Google SRE Book ch.22", "Release It! (Nygard)"]
+    },
+    "observability": {
+      "description": "Instrumentation that makes system behavior visible — logs, metrics, traces, and their correlation.",
+      "keywords": ["log", "metric", "trace", "monitor", "observe", "debug", "telemetry"],
+      "mapped_seeds": [
+        "structured_logging", "metrics_collection", "distributed_tracing",
+        "observability_pipelines", "alerting", "health_checks", "synthetic_monitoring",
+        "monitoring_dashboards", "log_aggregation", "profiling", "benchmarking",
+        "logging_and_tracing", "debugging", "signals",
+        "model_evaluation", "llm_evaluation", "model_interpretability"
+      ],
+      "canonical_sources": ["Google SRE Book ch.6", "Distributed Systems Observability (Majors)"]
+    },
+    "rate_limiting": {
+      "description": "Protecting systems and callers from overload — throttling, quotas, backpressure, and fairness.",
+      "keywords": ["rate", "limit", "throttle", "quota", "burst", "backpressure", "fairness"],
+      "mapped_seeds": [
+        "rate_limiting", "throttling", "api_gateway"
+      ],
+      "canonical_sources": ["AWS Well-Architected reliability", "Google SRE Book ch.21"]
+    },
+    "data_consistency": {
+      "description": "Correctness across concurrent writes, replicas, and distributed transactions; isolation and conflict resolution.",
+      "keywords": ["consistency", "transaction", "acid", "replica", "concurrent", "race", "conflict", "quorum", "consensus"],
+      "mapped_seeds": [
+        "acid_transactions", "isolation_levels", "mvcc", "deadlock_detection", "write_ahead_log",
+        "consensus", "leader_election", "linearizability", "causal_consistency",
+        "eventual_consistency", "vector_clocks", "lamport_timestamps", "crdts",
+        "distributed_transactions", "two_phase_commit", "quorum", "total_order_broadcast",
+        "read_repair", "anti_entropy", "saga_pattern", "clock_synchronization",
+        "cqrs", "event_sourcing", "mutex", "semaphore", "atomic_operations",
+        "lock_free_structures", "memory_model", "race_condition", "deadlock",
+        "livelock", "starvation", "condition_variable", "read_write_lock",
+        "barrier_synchronization", "concurrency_models", "memory_models",
+        "synchronization"
+      ],
+      "canonical_sources": ["Kleppmann DDIA ch.7-9", "Lamport 'Time, Clocks'"]
+    },
+    "service_integration": {
+      "description": "How components communicate across process/network boundaries — protocols, coupling, and contract boundaries.",
+      "keywords": ["service", "integration", "microservice", "coupling", "communication", "protocol", "mesh"],
+      "mapped_seeds": [
+        "microservices", "service_oriented_architecture", "pub_sub", "bounded_context",
+        "coupling_cohesion", "backend_for_frontend", "anti_corruption_layer",
+        "strangler_fig", "sidecar_pattern", "modular_monolith", "monolithic_architecture",
+        "layered_architecture", "event_driven_architecture", "hexagonal_architecture",
+        "clean_architecture", "domain_driven_design", "service_mesh",
+        "tcp_ip", "udp", "http", "http2_http3", "websockets", "quic",
+        "reverse_proxy", "nat", "service_discovery"
+      ],
+      "canonical_sources": ["Newman Building Microservices", "Evans DDD"]
+    },
+    "deployment_strategy": {
+      "description": "Getting code to production safely — pipelines, rollouts, rollbacks, and environment parity.",
+      "keywords": ["deploy", "release", "rollout", "canary", "ci", "cd", "pipeline", "rollback", "environment"],
+      "mapped_seeds": [
+        "ci_cd", "infrastructure_as_code", "containerization", "container_orchestration",
+        "blue_green_deployment", "canary_deployment", "rolling_deployment", "gitops",
+        "configuration_management", "feature_flags", "artifact_management",
+        "immutable_infrastructure", "environment_management", "pipeline_as_code",
+        "trunk_based_development", "infrastructure_testing", "policy_as_code",
+        "twelve_factor_app", "mlops", "model_serving",
+        "build_systems", "dependency_management", "version_control"
+      ],
+      "canonical_sources": ["Humble & Farley Continuous Delivery", "12-factor app"]
+    },
+    "schema_migration": {
+      "description": "Evolving persistent schemas and APIs without breaking in-flight clients or existing data.",
+      "keywords": ["migrate", "migration", "backward", "compatibility", "evolve", "dual-write", "lazy migration"],
+      "mapped_seeds": [
+        "schema_migration", "schema_evolution", "backup_recovery",
+        "etl_pipeline", "elt_pattern"
+      ],
+      "canonical_sources": ["Kleppmann DDIA ch.4", "Pramod Sadalage Refactoring Databases"]
+    },
+    "scalability": {
+      "description": "Handling increasing load — horizontal/vertical growth, partitioning, load distribution, and capacity.",
+      "keywords": ["scale", "capacity", "load", "partition", "shard", "horizontal", "vertical"],
+      "mapped_seeds": [
+        "horizontal_scaling", "vertical_scaling", "load_balancing", "auto_scaling",
+        "capacity_planning", "sharding", "partitioning_db", "replication_db",
+        "replication", "partitioning", "consistent_hashing", "cap_theorem",
+        "gossip_protocols", "space_based_architecture", "serverless_architecture",
+        "congestion_control", "bgp_routing", "ip_addressing",
+        "query_optimization", "vacuum_maintenance", "frontend_performance"
+      ],
+      "canonical_sources": ["AWS Well-Architected performance efficiency", "Kleppmann DDIA ch.6"]
+    },
+    "security_and_secrets": {
+      "description": "Cryptographic primitives, key/secret management, threat modeling, and defense-in-depth posture.",
+      "keywords": ["security", "crypto", "encrypt", "secret", "key", "certificate", "threat", "vulnerability"],
+      "mapped_seeds": [
+        "symmetric_encryption", "public_key_cryptography", "hash_functions", "tls_ssl",
+        "certificate_management", "secrets_management", "key_management",
+        "digital_signatures", "threat_modeling", "zero_trust", "supply_chain_security",
+        "security_misconfiguration", "secure_coding", "security_logging",
+        "penetration_testing", "firewalls", "vpn_tunneling",
+        "bias_and_fairness", "guardrails", "protection_security", "boot_process"
+      ],
+      "canonical_sources": ["OWASP Top 10", "NIST SP 800-53", "NIST SP 800-207 Zero Trust"]
+    },
+    "cost_optimization": {
+      "description": "Resource efficiency and tier selection — spending less to achieve the same functional and non-functional targets.",
+      "keywords": ["cost", "efficiency", "resource", "tier", "rightsize", "spend", "economy"],
+      "mapped_seeds": [
+        "cost_optimization", "cloud_primitives", "multi_region",
+        "database_connection_tuning", "auto_scaling", "capacity_planning",
+        "model_compression", "virtualization"
+      ],
+      "canonical_sources": ["AWS Well-Architected cost optimization pillar", "FinOps Framework"]
+    },
+    "sli_slo_sla": {
+      "description": "Reliability targets and error budgets — what 'good enough' means quantitatively and how to spend unreliability.",
+      "keywords": ["sli", "slo", "sla", "reliability", "availability", "target", "error budget", "uptime"],
+      "mapped_seeds": [
+        "sli", "slo", "error_budget", "on_call", "incident_management", "toil_reduction",
+        "postmortem", "runbook", "chaos_engineering", "site_reliability_engineering"
+      ],
+      "canonical_sources": ["Google SRE Book ch.4", "Google SRE Workbook"]
+    },
+    "testing_strategy": {
+      "description": "What to test and at what level — unit/integration/e2e balance, test doubles, and verification of behavior under stress.",
+      "keywords": ["test", "testing", "unit", "integration", "e2e", "mock", "fixture", "coverage", "tdd"],
+      "mapped_seeds": [
+        "unit_testing", "integration_testing", "e2e_testing", "test_driven_development",
+        "behavior_driven_development", "test_doubles", "property_based_testing",
+        "mutation_testing", "contract_testing", "test_coverage", "load_testing",
+        "stress_testing", "fuzz_testing", "snapshot_testing", "visual_regression_testing",
+        "test_pyramid", "smoke_testing", "regression_testing", "acceptance_testing",
+        "test_fixtures", "continuous_testing", "accessibility_testing", "security_testing",
+        "frontend_testing", "refactoring", "static_analysis"
+      ],
+      "canonical_sources": ["Beck TDD By Example", "Meszaros xUnit Test Patterns", "ISO/IEC 25010 testability"]
+    },
+    "idempotency_and_retry": {
+      "description": "Safe repetition of operations under failure — exactly-once-ish semantics, retry budgets, and idempotency keys.",
+      "keywords": ["idempotent", "retry", "backoff", "exactly-once", "dedup", "at-least-once", "nonce"],
+      "mapped_seeds": [
+        "retry_backoff", "idempotent_processing", "idempotency"
+      ],
+      "canonical_sources": ["Google SRE Book ch.22", "AWS Builders' Library 'Challenges with distributed systems'"]
+    }
+  },
+  "orphan_l1s": {
+    "arrays": "Implementation-level data structure; serves as L2 parent in Phase 2/3 (e.g., L2 'sparse_arrays', 'ring_buffer')",
+    "linked_lists": "Implementation primitive; L2 parent for specialized list variants",
+    "stacks_and_queues": "Implementation primitive; L2 parent for bounded/priority variants",
+    "hash_tables": "Implementation primitive; L2 parent for hash schemes (robin-hood, cuckoo, etc.)",
+    "binary_trees": "Implementation primitive; L2 parent for tree variants",
+    "balanced_search_trees": "Implementation primitive (B-trees, red-black); L2 parent for specialized balancers",
+    "heaps": "Implementation primitive; L2 parent for fibonacci, pairing heaps",
+    "graphs": "Implementation primitive; L2 parent for graph representations",
+    "tries": "Implementation primitive; L2 parent for radix/patricia variants",
+    "union_find": "Implementation primitive; L2 parent for disjoint-set optimizations",
+    "bloom_filters": "Probabilistic primitive; L2 parent for counting/cuckoo filters",
+    "complexity_analysis": "Methodology concept; L2 parent for amortized/competitive analysis",
+    "recursion": "Language-level technique; L2 parent for tail/mutual recursion patterns",
+    "sorting_algorithms": "Algorithmic primitive; L2 parent for specific sorts (radix, timsort)",
+    "searching_algorithms": "Algorithmic primitive; L2 parent for domain-specific searches",
+    "graph_traversal": "Algorithmic primitive; L2 parent for BFS/DFS variants",
+    "shortest_path": "Algorithmic primitive; L2 parent for Dijkstra, A*, Bellman-Ford",
+    "minimum_spanning_tree": "Algorithmic primitive; L2 parent for Kruskal/Prim variants",
+    "topological_sort": "Algorithmic primitive; L2 parent for Kahn/DFS variants",
+    "dynamic_programming": "Algorithmic technique; L2 parent for memoization patterns",
+    "greedy_algorithms": "Algorithmic paradigm; L2 parent for specific greedy strategies",
+    "divide_and_conquer": "Algorithmic paradigm; L2 parent for specific applications",
+    "backtracking": "Algorithmic paradigm; L2 parent for constraint satisfaction",
+    "string_algorithms": "Domain-specific algorithmic category; L2 parent for KMP, Aho-Corasick, etc.",
+    "hashing": "Primitive; L2 parent for specific hash functions and schemes",
+    "bit_manipulation": "Low-level technique; L2 parent for bitwise tricks and SIMD",
+    "np_completeness": "Theoretical concept; L2 parent for reduction techniques",
+    "network_flow": "Algorithmic area; L2 parent for Ford-Fulkerson, max-flow min-cut",
+    "randomized_algorithms": "Algorithmic paradigm; L2 parent for specific randomized techniques",
+    "solid_principles": "Coding principle; L2 parent for individual SOLID principles when taught",
+    "dependency_injection": "Coding pattern; L2 parent for DI container variations",
+    "design_patterns": "Coding pattern umbrella; L2 parent for specific GoF patterns",
+    "repository_pattern": "Coding pattern; serves as L2 parent for repository variants",
+    "vertical_slice": "Coding organization pattern; L2 parent for feature-based structures",
+    "pipe_filter": "Coding pattern; L2 parent for streaming/composition patterns",
+    "threads": "OS-level primitive; L2 parent for thread-local storage patterns",
+    "actor_model": "Concurrency paradigm; L2 parent for specific actor implementations",
+    "csp": "Concurrency paradigm; L2 parent for channel-based designs",
+    "parallel_algorithms": "Algorithmic area; L2 parent for parallel variants of sequential algorithms",
+    "component_architecture": "Frontend pattern; L2 parent for specific component strategies",
+    "client_side_rendering": "Frontend rendering approach; L2 parent for SSR/hydration variants",
+    "client_side_routing": "Frontend pattern; L2 parent for hash/history-based routing",
+    "form_handling": "Frontend pattern; L2 parent for controlled/uncontrolled form strategies",
+    "design_system": "Frontend concept; L2 parent for specific design system approaches",
+    "css_layout": "Frontend styling; L2 parent for flexbox/grid variants",
+    "bundling_and_tooling": "Frontend build concern; L2 parent for specific bundler patterns",
+    "internationalization": "Frontend concern; L2 parent for specific i18n strategies",
+    "optimistic_updates": "Frontend pattern; L2 parent for reconciliation strategies",
+    "micro_frontends": "Frontend architecture; L2 parent for module-federation variants",
+    "island_architecture": "Frontend architecture; L2 parent for island rehydration patterns",
+    "animation_and_motion": "Frontend concern; L2 parent for animation primitive choices",
+    "real_time_ui": "Frontend concern; L2 parent for WebSocket/SSE/polling trade-offs",
+    "supervised_learning": "ML paradigm; L2 parent for specific supervised algorithms",
+    "unsupervised_learning": "ML paradigm; L2 parent for specific unsupervised algorithms",
+    "reinforcement_learning": "ML paradigm; L2 parent for specific RL algorithms",
+    "classification": "ML task; L2 parent for binary/multi-class/multi-label variants",
+    "regression": "ML task; L2 parent for linear/polynomial/tree-based regressors",
+    "clustering": "ML task; L2 parent for k-means/DBSCAN/hierarchical variants",
+    "dimensionality_reduction": "ML technique; L2 parent for PCA/t-SNE/UMAP variants",
+    "feature_engineering": "ML practice; L2 parent for specific transformation strategies",
+    "hyperparameter_tuning": "ML practice; L2 parent for grid/bayesian/population search",
+    "ensemble_methods": "ML technique; L2 parent for bagging/boosting/stacking variants",
+    "transfer_learning": "ML technique; L2 parent for fine-tuning/LoRA/domain-adaptation",
+    "convolutional_network": "ML architecture; L2 parent for specific CNN variants",
+    "recurrent_network": "ML architecture; L2 parent for LSTM/GRU/Transformer variants",
+    "attention_mechanism": "ML mechanism; L2 parent for self/cross/flash attention variants",
+    "generative_models": "ML category; L2 parent for GANs/VAEs/autoregressive models",
+    "diffusion_models": "ML category; L2 parent for specific diffusion formulations",
+    "natural_language_processing": "ML domain; L2 parent for tokenization/embedding/etc.",
+    "computer_vision": "ML domain; L2 parent for detection/segmentation/etc.",
+    "tokenization": "NLP primitive; L2 parent for BPE/WordPiece/SentencePiece variants",
+    "prompt_engineering": "LLM practice; L2 parent for specific prompting techniques",
+    "retrieval_augmented_gen": "LLM pattern; L2 parent for retrieval strategies (sparse/dense/hybrid)",
+    "llm_agents": "LLM architecture; L2 parent for ReAct/tool-use/planning patterns",
+    "data_augmentation": "ML practice; L2 parent for specific augmentation strategies",
+    "anomaly_detection": "ML task; L2 parent for statistical/ML-based detection variants",
+    "recommendation_systems": "ML domain; L2 parent for collaborative/content/hybrid recommenders",
+    "multimodal_learning": "ML category; L2 parent for vision-language/speech-language models",
+    "dns": "Networking primitive; L2 parent for DNS record types and resolvers",
+    "osi_model": "Networking reference; L2 parent for layer-specific protocols",
+    "dhcp": "Networking protocol; L2 parent for DHCP option specifics",
+    "memory_management": "OS internal; L2 parent for allocation strategies",
+    "virtual_memory": "OS internal; L2 parent for paging/swapping patterns",
+    "file_systems": "OS internal; L2 parent for specific fs designs (ext, zfs, etc.)",
+    "io_management": "OS internal; L2 parent for async I/O models (epoll, io_uring)",
+    "system_calls": "OS internal; L2 parent for syscall categories",
+    "interprocess_communication": "OS primitive; L2 parent for IPC mechanisms",
+    "kernel_architecture": "OS design; L2 parent for monolithic/microkernel variants",
+    "interrupt_handling": "OS internal; L2 parent for interrupt-handling patterns",
+    "disk_scheduling": "OS internal; L2 parent for scheduling algorithm variants",
+    "memory_mapped_io": "OS primitive; L2 parent for mmap-based patterns",
+    "procedural_programming": "Language paradigm; L2 parent for procedural idioms",
+    "object_oriented_programming": "Language paradigm; L2 parent for OO idioms (composition, inheritance)",
+    "functional_programming": "Language paradigm; L2 parent for FP idioms (monads, lenses)",
+    "type_systems": "Language feature; L2 parent for nominal/structural/dependent types",
+    "type_inference": "Language feature; L2 parent for Hindley-Milner variants",
+    "generics": "Language feature; L2 parent for variance/higher-kinded types",
+    "algebraic_data_types": "Language feature; L2 parent for sum/product types",
+    "pattern_matching": "Language feature; L2 parent for match-expression variants",
+    "closures": "Language feature; L2 parent for closure capture semantics",
+    "garbage_collection": "Language runtime; L2 parent for GC algorithms (mark-sweep, gen, etc.)",
+    "ownership_borrowing": "Language model (Rust-like); L2 parent for borrowing-related patterns",
+    "scope_and_binding": "Language feature; L2 parent for lexical/dynamic scope",
+    "compilers": "Toolchain concept; L2 parent for compiler phases",
+    "interpreters": "Toolchain concept; L2 parent for interpretation strategies",
+    "metaprogramming": "Language feature; L2 parent for macros/reflection patterns",
+    "traits_interfaces": "Language feature; L2 parent for trait-resolution mechanisms",
+    "variance": "Type-system feature; L2 parent for covariance/contravariance patterns",
+    "module_systems": "Language feature; L2 parent for module-namespacing patterns",
+    "lambda_calculus": "Theoretical foundation; L2 parent for typed/untyped variants",
+    "effects_systems": "Type-system extension; L2 parent for effect-tracking patterns",
+    "code_review": "Practice concept; L2 parent for review process variants",
+    "technical_debt": "Concept; L2 parent for debt-tracking and paydown strategies",
+    "coding_standards": "Practice concept; L2 parent for language-specific standards",
+    "complexity_management": "Meta-concept; L2 parent for cognitive-load reduction techniques",
+    "documentation": "Practice; L2 parent for doc-as-code, ADRs, etc."
+  }
+}

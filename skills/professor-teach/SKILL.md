@@ -4,7 +4,6 @@ description: >
   Teach or review a single technical concept inline. Invoked by /whiteboard
   during JIT loop. Decides action based on FSRS status, executes teaching,
   writes Teaching Guide to concept .md, returns grade and notes.
-disable-model-invocation: true
 argument-hint: "<concept_id> --status <fsrs_status> --domain <id> [--parent <l1_id>] --task-context '<text>' --concern-or-component <id> --session-id <uuid> [--search-results '<json>']"
 model: sonnet
 inputs:

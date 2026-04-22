@@ -145,7 +145,7 @@ Give brief feedback after grading:
 
 For `known_baseline` (status was `new`, baseline grade ≥ 3): give a one-sentence acknowledgment. No full teach.
 
-## Step 6 — Write/overwrite Teaching Guide section
+## Step 7 — Write/overwrite Teaching Guide section
 
 Always OVERWRITE the `## Teaching Guide` section with current guidance (not a journal). Construct the body below, then call `update.js --body`:
 
@@ -183,11 +183,11 @@ node ${CLAUDE_PLUGIN_ROOT}/scripts/update.js \
   --registry-path ${CLAUDE_PLUGIN_ROOT}/data/concepts_registry.json
 ```
 
-If the envelope returns `status: "error"`, note the failure in `notes_for_session_log` but continue to Step 7. The grade must still be recorded. This is the `update_script_failure` degradation mode.
+If the envelope returns `status: "error"`, note the failure in `notes_for_session_log` but continue to Step 8. FSRS state is already persisted. This is the `update_script_failure` degradation mode.
 
-Skip Step 6 entirely when action is `skipped_not_due`.
+Skip Step 7 entirely when action is `skipped_not_due`.
 
-## Step 7 — Update FSRS state with grade + nonce
+## Step 6 — Update FSRS state with grade + nonce
 
 Skip this step when action is `skipped_not_due` or `known_baseline` with grade `null`.
 

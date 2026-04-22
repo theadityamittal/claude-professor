@@ -325,6 +325,7 @@ Reviewed in context of RAG pipeline optimization. Recall improved on overlap str
 | Per-concern web search prefetch | One search fired per concern at `phase-start`, shared across all concepts in that concern. Cost scales with concern count (5-8/session), not concept count. Freshness is the value — no caching. |
 | One-anchor model for search injection | A single best snippet (concept-match first, task-context domain as tiebreaker) is threaded through real-world example, task connection, and recall question. Analogy is always synthetic. Coherence across blocks over variety. |
 | Graceful degradation, never abort | On empty, malformed, or parse-failed search results: emit an inline signal at the top of teaching output (specific failure + query), then teach from training data. Teaching is never withheld due to search failure. |
+| `record-concept` trusts the caller's action | `next-concern`/`next-component` is the authoritative issuer of FSRS status. `record-concept` does not re-fetch live FSRS state — by the time it runs, `professor-teach` has already called `update.js --grade` and the status has advanced. Session bookkeeping and FSRS advancement are separate concerns. |
 
 ## Migrating from v4
 

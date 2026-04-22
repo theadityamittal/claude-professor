@@ -1,0 +1,23 @@
+{
+  "name": "cross_parent_drift_sparse_vectors",
+  "category": "cross_parent_drift",
+  "candidate": {
+    "id": "sparse_vector_repr",
+    "description": "Document representation as high-dimensional weighted term vectors with mostly zero values, used for lexical retrieval.",
+    "proposed_parent": "feature_engineering",
+    "proposed_domain": "machine_learning"
+  },
+  "universe_thin": {
+    "l2s": [
+      { "id": "sparse_vectors", "parent": "full_text_search", "scope_1line": "Term-weighted vectors with mostly-zero dims used in lexical retrieval." },
+      { "id": "dense_retrieval", "parent": "full_text_search", "scope_1line": "Embedding-based similarity search using dense vectors." },
+      { "id": "tfidf_weighting", "parent": "full_text_search", "scope_1line": "Term frequency-inverse document frequency weighting scheme." }
+    ],
+    "l1s": [
+      { "id": "full_text_search", "domain": "databases", "scope_1line": "Searching documents by text content using inverted indices." },
+      { "id": "feature_engineering", "domain": "machine_learning", "scope_1line": "Transforming raw data into model-ready features." }
+    ]
+  },
+  "expected_top_candidate_ids": ["sparse_vectors"],
+  "min_confidence": 0.5
+}

@@ -1,5 +1,5 @@
 {
   "name": "claude-professor",
   "description": "Learning layer for AI-assisted development. Teaches concepts before you build, tracks knowledge with spaced repetition, analyzes project architecture, and conducts system design conversations with integrated teaching.",
-  "version": "4.0.0"
+  "version": "5.1.1"
 }

@@ -1,0 +1,23 @@
+{
+  "name": "cross_parent_drift_quorum_voting",
+  "category": "cross_parent_drift",
+  "candidate": {
+    "id": "quorum_voting",
+    "description": "Requiring majority of replicas to acknowledge a read or write to tolerate failures while maintaining consistency.",
+    "proposed_parent": "replication",
+    "proposed_domain": "distributed_systems"
+  },
+  "universe_thin": {
+    "l2s": [
+      { "id": "majority_quorum", "parent": "quorum", "scope_1line": "Simple majority (N/2 + 1) required for read or write operations." },
+      { "id": "sloppy_quorum", "parent": "quorum", "scope_1line": "Relaxed quorum that accepts writes on substitute nodes during failures." },
+      { "id": "leader_based_replication", "parent": "replication", "scope_1line": "Single leader accepts writes, followers replicate asynchronously." }
+    ],
+    "l1s": [
+      { "id": "quorum", "domain": "distributed_systems", "scope_1line": "Voting-based coordination for replicated reads and writes." },
+      { "id": "replication", "domain": "distributed_systems", "scope_1line": "Maintaining multiple copies of data across nodes." }
+    ]
+  },
+  "expected_top_candidate_ids": ["majority_quorum", "quorum"],
+  "min_confidence": 0.6
+}

@@ -1,0 +1,23 @@
+{
+  "name": "parent_disputed_lease_locking",
+  "category": "parent_disputed",
+  "candidate": {
+    "id": "lease_based_locking",
+    "description": "Time-bounded exclusive access grants where the holder must renew before expiry; used for distributed mutual exclusion and leader election fencing.",
+    "proposed_parent": "caching_strategies",
+    "proposed_domain": "performance_scalability"
+  },
+  "universe_thin": {
+    "l2s": [
+      { "id": "distributed_locks_redis", "parent": "leader_election", "scope_1line": "Redlock-style distributed locks with lease timeouts." },
+      { "id": "fencing_tokens", "parent": "leader_election", "scope_1line": "Monotonic tokens preventing stale leaders from acting." }
+    ],
+    "l1s": [
+      { "id": "leader_election", "domain": "distributed_systems", "scope_1line": "Choosing a single coordinator among replicas." },
+      { "id": "caching_strategies", "domain": "performance_scalability", "scope_1line": "Patterns for storing frequently accessed data closer to consumers." },
+      { "id": "consensus", "domain": "distributed_systems", "scope_1line": "Agreement protocols across unreliable nodes." }
+    ]
+  },
+  "expected_top_candidate_ids": ["distributed_locks_redis", "leader_election"],
+  "min_confidence": 0.5
+}

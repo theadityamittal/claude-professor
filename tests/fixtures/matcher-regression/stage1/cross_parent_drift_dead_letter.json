@@ -1,0 +1,23 @@
+{
+  "name": "cross_parent_drift_dead_letter",
+  "category": "cross_parent_drift",
+  "candidate": {
+    "id": "dead_letter_handling",
+    "description": "Routing messages that repeatedly fail processing to a dedicated queue for inspection and manual recovery.",
+    "proposed_parent": "async_processing",
+    "proposed_domain": "performance_scalability"
+  },
+  "universe_thin": {
+    "l2s": [
+      { "id": "dead_letter_queues", "parent": "message_queues", "scope_1line": "Queue for messages that exceed retry limits; enables postmortem analysis." },
+      { "id": "retry_with_backoff", "parent": "message_queues", "scope_1line": "Progressive delay between retry attempts to avoid overwhelming downstream." },
+      { "id": "poison_pill_detection", "parent": "async_processing", "scope_1line": "Identifying messages that reliably crash consumers and isolating them." }
+    ],
+    "l1s": [
+      { "id": "message_queues", "domain": "performance_scalability", "scope_1line": "Asynchronous decoupling of producers and consumers via durable queues." },
+      { "id": "async_processing", "domain": "performance_scalability", "scope_1line": "Non-blocking execution of work outside request path." }
+    ]
+  },
+  "expected_top_candidate_ids": ["dead_letter_queues"],
+  "min_confidence": 0.6
+}

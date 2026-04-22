@@ -8,6 +8,7 @@ const path = require('node:path');
 const os = require('node:os');
 
 const SCRIPT = path.join(__dirname, '..', '..', 'scripts', 'session.js');
+const CONCERNS_PATH = path.join(__dirname, '..', '..', 'data', 'concerns.json');
 let testDir;
 
 beforeEach(() => {
@@ -32,18 +33,29 @@ function runExpectFail(args) {
   }
 }
 
-describe('session.js contract', () => {
+describe('session.js contract (v5)', () => {
   it('create returns envelope with status ok and data', () => {
-    const output = run(['create', '--session-dir', testDir, '--feature', 'test', '--branch', 'main']);
+    const output = run([
+      'create',
+      '--task', 'Design a RAG pipeline',
+      '--session-dir', testDir,
+      '--concerns-path', CONCERNS_PATH,
+    ]);
     assert.strictEqual(output.status, 'ok');
     assert.ok(output.data);
     assert.strictEqual(output.data.success, true);
     assert.ok(output.data.session_id);
+    assert.strictEqual(output.data.task, 'Design a RAG pipeline');
     assert.strictEqual('error' in output, false);
   });
 
   it('finish returns envelope with verified and warnings', () => {
-    run(['create', '--session-dir', testDir, '--feature', 'test', '--branch', 'main']);
+    run([
+      'create',
+      '--task', 'Task',
+      '--session-dir', testDir,
+      '--concerns-path', CONCERNS_PATH,
+    ]);
     const output = run(['finish', '--session-dir', testDir]);
     assert.strictEqual(output.status, 'ok');
     assert.strictEqual(output.data.verified, true);

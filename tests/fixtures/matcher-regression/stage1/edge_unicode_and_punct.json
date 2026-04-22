@@ -1,0 +1,23 @@
+{
+  "name": "edge_unicode_and_punct",
+  "category": "edge",
+  "candidate": {
+    "id": "naive_bayes--text_clf",
+    "description": "Naïve Bayes text classifier using token likelihoods under conditional-independence assumption; baseline for spam, sentiment, and topic classification. Mots-clés: clasificador, ベイズ.",
+    "proposed_parent": "natural_language_processing",
+    "proposed_domain": "machine_learning"
+  },
+  "universe_thin": {
+    "l2s": [
+      { "id": "naive_bayes_classifier", "parent": "classification", "scope_1line": "Probabilistic classifier assuming conditional independence between features." },
+      { "id": "logistic_regression_clf", "parent": "classification", "scope_1line": "Linear classifier optimizing log-loss; widely used baseline." },
+      { "id": "text_classification_pipeline", "parent": "natural_language_processing", "scope_1line": "End-to-end NLP pipeline: tokenize, vectorize, classify." }
+    ],
+    "l1s": [
+      { "id": "classification", "domain": "machine_learning", "scope_1line": "Predicting categorical labels from features." },
+      { "id": "natural_language_processing", "domain": "machine_learning", "scope_1line": "ML applied to understanding and generating human language." }
+    ]
+  },
+  "expected_top_candidate_ids": ["naive_bayes_classifier"],
+  "min_confidence": 0.6
+}

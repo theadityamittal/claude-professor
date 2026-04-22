@@ -1,0 +1,27 @@
+{
+  "name": "genuinely_novel_anti_entropy_merkle",
+  "category": "genuinely_novel",
+  "candidate": {
+    "id": "merkle_tree_sync",
+    "description": "Comparing replica datasets via hierarchical hash trees so that only differing subranges are exchanged, dramatically reducing bandwidth for anti-entropy repair.",
+    "proposed_parent": "anti_entropy",
+    "proposed_domain": "distributed_systems"
+  },
+  "candidates_full": [
+    {
+      "id": "anti_entropy",
+      "kind": "l1",
+      "domain": "distributed_systems",
+      "full_description": "Background process reconciling divergent replicas in eventually consistent systems; Merkle-tree-based diffing is one specific implementation but not previously catalogued as an L2."
+    },
+    {
+      "id": "read_repair",
+      "kind": "l1",
+      "domain": "distributed_systems",
+      "full_description": "Repairing replica divergence on the read path; complementary to background anti-entropy but distinct mechanism."
+    }
+  ],
+  "expected_match": "no_match",
+  "expected_matched_id": null,
+  "expected_confidence_min": 0.6
+}

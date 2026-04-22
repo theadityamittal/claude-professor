@@ -1,0 +1,22 @@
+{
+  "name": "genuinely_novel_crdt_delta",
+  "category": "genuinely_novel",
+  "candidate": {
+    "id": "delta_state_crdt",
+    "description": "Replicating only the deltas (changes) of a CRDT state rather than the entire state, reducing bandwidth while preserving convergence guarantees.",
+    "proposed_parent": "crdts",
+    "proposed_domain": "distributed_systems"
+  },
+  "universe_thin": {
+    "l2s": [
+      { "id": "state_based_crdts", "parent": "crdts", "scope_1line": "CRDTs replicated by merging full states via a join semilattice." },
+      { "id": "operation_based_crdts", "parent": "crdts", "scope_1line": "CRDTs replicated by broadcasting commutative operations." }
+    ],
+    "l1s": [
+      { "id": "crdts", "domain": "distributed_systems", "scope_1line": "Conflict-free replicated data types converging without coordination." },
+      { "id": "replication", "domain": "distributed_systems", "scope_1line": "Maintaining multiple copies of data across nodes." }
+    ]
+  },
+  "expected_top_candidate_ids": ["state_based_crdts", "operation_based_crdts"],
+  "min_confidence": 0.3
+}

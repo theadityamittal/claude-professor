@@ -1,0 +1,21 @@
+{
+  "name": "edge_single_candidate_universe",
+  "category": "edge",
+  "candidate": {
+    "id": "locality_sensitive_hashing",
+    "description": "Family of hash functions such that similar items collide with high probability and dissimilar items collide with low probability; used for approximate nearest-neighbor search.",
+    "proposed_parent": "hashing",
+    "proposed_domain": "algorithms_data_structures"
+  },
+  "candidates_full": [
+    {
+      "id": "hashing",
+      "kind": "l1",
+      "domain": "algorithms_data_structures",
+      "full_description": "Hash function design and applications: cryptographic, universal, perfect, and locality-sensitive variants; covers collision handling and load factor analysis. LSH is one specific sub-topic under this umbrella but has not been catalogued as its own L2 yet."
+    }
+  ],
+  "expected_match": "no_match",
+  "expected_matched_id": null,
+  "expected_confidence_min": 0.6
+}

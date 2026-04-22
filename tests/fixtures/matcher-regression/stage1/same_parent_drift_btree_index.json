@@ -1,0 +1,23 @@
+{
+  "name": "same_parent_drift_btree_index",
+  "category": "same_parent_drift",
+  "candidate": {
+    "id": "b_tree_index",
+    "description": "Balanced tree index supporting range scans and point lookups; most common default index type in relational databases.",
+    "proposed_parent": "indexing",
+    "proposed_domain": "databases"
+  },
+  "universe_thin": {
+    "l2s": [
+      { "id": "btree_indexes", "parent": "indexing", "scope_1line": "Balanced-tree indexes; default index type in most RDBMS engines." },
+      { "id": "hash_indexes", "parent": "indexing", "scope_1line": "O(1) equality indexes; no range support." },
+      { "id": "composite_indexes", "parent": "indexing", "scope_1line": "Multi-column indexes sensitive to column order." }
+    ],
+    "l1s": [
+      { "id": "indexing", "domain": "databases", "scope_1line": "Data structures accelerating data retrieval." },
+      { "id": "storage_engines", "domain": "databases", "scope_1line": "Physical storage layer: page layout, buffer pool, WAL." }
+    ]
+  },
+  "expected_top_candidate_ids": ["btree_indexes"],
+  "min_confidence": 0.7
+}

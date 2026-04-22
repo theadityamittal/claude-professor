@@ -1,0 +1,23 @@
+{
+  "name": "same_parent_drift_cache_aside",
+  "category": "same_parent_drift",
+  "candidate": {
+    "id": "cache_aside_pattern",
+    "description": "Application reads from cache first, on miss fetches from source and populates cache; writes go to source and invalidate or update cache entry.",
+    "proposed_parent": "caching_strategies",
+    "proposed_domain": "performance_scalability"
+  },
+  "universe_thin": {
+    "l2s": [
+      { "id": "cache_aside", "parent": "caching_strategies", "scope_1line": "Read-through pattern where app checks cache, falls back to source, then populates cache." },
+      { "id": "write_through_cache", "parent": "caching_strategies", "scope_1line": "Writes propagate synchronously to cache and backing store." },
+      { "id": "write_back_cache", "parent": "caching_strategies", "scope_1line": "Writes to cache only, deferred async flush to backing store." }
+    ],
+    "l1s": [
+      { "id": "caching_strategies", "domain": "performance_scalability", "scope_1line": "Patterns for storing frequently accessed data closer to consumers." },
+      { "id": "cache_invalidation", "domain": "performance_scalability", "scope_1line": "Strategies for keeping cached data consistent with source of truth." }
+    ]
+  },
+  "expected_top_candidate_ids": ["cache_aside"],
+  "min_confidence": 0.6
+}

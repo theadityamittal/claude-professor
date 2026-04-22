@@ -1,0 +1,29 @@
+{
+  "name": "cross_parent_drift_inverted_index",
+  "category": "cross_parent_drift",
+  "candidate": {
+    "id": "inverted_index_structure",
+    "description": "Mapping from terms to lists of document IDs containing them; the core data structure for full-text search.",
+    "proposed_parent": "indexing",
+    "proposed_domain": "databases"
+  },
+  "candidates_full": [
+    {
+      "id": "inverted_index",
+      "kind": "l2",
+      "parent": "full_text_search",
+      "domain": "databases",
+      "full_description": "Posting-list data structure mapping terms to document IDs and positions; core of search engines like Lucene. Distinct from B-tree indexes which are sorted on key prefixes."
+    },
+    {
+      "id": "btree_indexes",
+      "kind": "l2",
+      "parent": "indexing",
+      "domain": "databases",
+      "full_description": "Balanced-tree index used as the default in most relational databases; supports point and range queries on sorted keys."
+    }
+  ],
+  "expected_match": "semantic_l2",
+  "expected_matched_id": "inverted_index",
+  "expected_confidence_min": 0.7
+}

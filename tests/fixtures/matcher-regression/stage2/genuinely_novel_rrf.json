@@ -1,0 +1,28 @@
+{
+  "name": "genuinely_novel_rrf",
+  "category": "genuinely_novel",
+  "candidate": {
+    "id": "reciprocal_rank_fusion",
+    "description": "Combining ranked lists by summing reciprocal ranks (1/(k+rank)) of each document across multiple rankers; robust to score-scale mismatch and widely used in hybrid search.",
+    "proposed_parent": "full_text_search",
+    "proposed_domain": "databases"
+  },
+  "candidates_full": [
+    {
+      "id": "full_text_search",
+      "kind": "l1",
+      "domain": "databases",
+      "full_description": "Searching documents by text content using inverted indices; covers tokenization, stemming, scoring, and ranking."
+    },
+    {
+      "id": "bm25_ranking",
+      "kind": "l2",
+      "parent": "full_text_search",
+      "domain": "databases",
+      "full_description": "Probabilistic single-ranker scoring function; not a fusion technique."
+    }
+  ],
+  "expected_match": "no_match",
+  "expected_matched_id": null,
+  "expected_confidence_min": 0.7
+}

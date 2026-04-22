@@ -2,10 +2,11 @@
 
 const path = require('node:path');
 const fs = require('node:fs');
-const { readJSON, writeJSON, isoNow, parseArgs, envelope, envelopeError } = require('./utils.js');
+const { readJSON, isoNow, parseArgs, envelope, envelopeError } = require('./utils.js');
 
 const SESSION_FILE = '.session-state.json';
 const LOG_FILE = '.session-log.jsonl';
+const VALID_STEPS = new Set([1, 2, 3, 4]);
 
 function getSessionPath(sessionDir) {
   return path.join(sessionDir, SESSION_FILE);
@@ -15,67 +16,71 @@ function getLogPath(sessionDir) {
   return path.join(sessionDir, LOG_FILE);
 }
 
-function schedule(sessionDir, phase, concepts) {
-  const sessionPath = getSessionPath(sessionDir);
-  const state = readJSON(sessionPath);
-  if (!state) throw new Error('No active session');
-
-  const existing = Array.isArray(state.teaching_schedule) ? state.teaching_schedule : [];
-  const updated = [...existing, ...concepts];
-
-  const updatedState = { ...state, teaching_schedule: updated };
-  writeJSON(sessionPath, updatedState);
-
-  return { scheduled: concepts.length, total: updated.length };
+/**
+ * Collect scheduled concept ids for a given phase from v5 state.
+ * @param {object} phaseState - state.phases[step]
+ * @param {number} step - 1 | 2 | 3 | 4
+ * @returns {string[]}
+ */
+function scheduledConceptIds(phaseState, step) {
+  if (!phaseState) return [];
+  if (step === 1) {
+    const concerns = Array.isArray(phaseState.concerns) ? phaseState.concerns : [];
+    return concerns.flatMap(c => Array.isArray(c.concepts) ? c.concepts : []);
+  }
+  const components = Array.isArray(phaseState.components) ? phaseState.components : [];
+  return components.flatMap(c => [
+    ...(Array.isArray(c.concepts_seed) ? c.concepts_seed : []),
+    ...(Array.isArray(c.concepts_proposed) ? c.concepts_proposed.map(p => p.id).filter(Boolean) : []),
+  ]);
 }
 
+/**
+ * Audit-only checkpoint. Does NOT mutate state.
+ * Compares scheduled concepts for phase N against concepts_checked filtered by phase===N.
+ *
+ * @param {string} sessionDir
+ * @param {number} step - 1 | 2 | 3 | 4
+ * @returns {{ result: 'passed'|'blocked', missing: string[], scheduled_count: number, checked_count: number, timestamp: string }}
+ */
 function checkpoint(sessionDir, step) {
-  const sessionPath = getSessionPath(sessionDir);
-  const state = readJSON(sessionPath);
-  if (!state) throw new Error('No active session');
+  const state = readJSON(getSessionPath(sessionDir));
+  if (!state) throw new Error('No active session: .session-state.json not found');
 
-  const schedule = Array.isArray(state.teaching_schedule) ? state.teaching_schedule : [];
-  const checked = Array.isArray(state.concepts_checked) ? state.concepts_checked : [];
-  const checkedIds = new Set(checked.map(c => c.concept_id));
+  const phases = state.phases || {};
+  const phaseState = phases[String(step)];
+  const scheduled = scheduledConceptIds(phaseState, step);
 
-  const assignedToStep = schedule.filter(c => c.step === step);
-  const missing = assignedToStep
-    .filter(c => !checkedIds.has(c.concept_id))
-    .map(c => c.concept_id);
+  const checkedEntries = Array.isArray(state.concepts_checked) ? state.concepts_checked : [];
+  const checkedForPhase = checkedEntries.filter(c => c && c.phase === step);
+  const checkedIds = new Set(checkedForPhase.map(c => c.concept_id));
 
-  let result;
-  if (state.circuit_breaker === 'open') {
-    result = 'degraded';
-  } else if (missing.length > 0) {
-    result = 'blocked';
-  } else {
-    result = 'passed';
-  }
+  const missing = scheduled.filter(id => !checkedIds.has(id));
+  const result = missing.length === 0 ? 'passed' : 'blocked';
 
-  const entry = { step, result, timestamp: isoNow() };
-  const history = Array.isArray(state.checkpoint_history) ? state.checkpoint_history : [];
-  const updatedState = { ...state, checkpoint_history: [...history, entry] };
-  writeJSON(sessionPath, updatedState);
-
-  return { result, missing };
+  return {
+    result,
+    missing,
+    scheduled_count: scheduled.length,
+    checked_count: checkedForPhase.length,
+    timestamp: isoNow(),
+  };
 }
 
 function log(sessionDir, entry) {
   const logPath = getLogPath(sessionDir);
   const line = JSON.stringify({ timestamp: isoNow(), ...entry }) + '\n';
   fs.appendFileSync(logPath, line, 'utf-8');
-
   return { logged: true };
 }
 
 function status(sessionDir) {
   const state = readJSON(getSessionPath(sessionDir));
-  if (!state) throw new Error('No active session');
+  if (!state) throw new Error('No active session: .session-state.json not found');
 
   return {
-    schedule: Array.isArray(state.teaching_schedule) ? state.teaching_schedule : [],
-    checkpoints: Array.isArray(state.checkpoint_history) ? state.checkpoint_history : [],
-    circuit: state.circuit_breaker || 'closed',
+    phases: state.phases || {},
+    concepts_checked: Array.isArray(state.concepts_checked) ? state.concepts_checked : [],
   };
 }
 
@@ -86,8 +91,16 @@ if (require.main === module) {
   function validateArgs(required, usage) {
     const missing = required.filter(k => !args[k]);
     if (missing.length > 0) {
-      process.stderr.write(JSON.stringify(envelopeError('blocking', `Missing required arguments: ${missing.join(', ')}`)) + '\n');
-      process.stderr.write(`Usage: node gate.js ${usage}\n`);
+      process.stderr.write(JSON.stringify(envelopeError('blocking', `Missing required arguments: ${missing.join(', ')}. Usage: node gate.js ${usage}`)) + '\n');
+      process.exit(1);
+    }
+  }
+
+  function rejectUnknownFlags(allowed, subcommand) {
+    const known = new Set(allowed);
+    const unknown = Object.keys(args).filter(k => !known.has(k));
+    if (unknown.length > 0) {
+      process.stderr.write(JSON.stringify(envelopeError('blocking', `Unknown flag(s) for ${subcommand}: ${unknown.map(k => '--' + k).join(', ')}`)) + '\n');
       process.exit(1);
     }
   }
@@ -95,16 +108,17 @@ if (require.main === module) {
   try {
     let result;
     switch (mode) {
-      case 'schedule': {
-        validateArgs(['session-dir', 'phase', 'concepts'], 'schedule --session-dir PATH --phase N --concepts JSON');
-        const concepts = JSON.parse(args.concepts);
-        result = schedule(args['session-dir'], parseInt(args.phase, 10), concepts);
+      case 'checkpoint': {
+        rejectUnknownFlags(['session-dir', 'step'], 'checkpoint');
+        validateArgs(['session-dir', 'step'], 'checkpoint --session-dir PATH --step <1|2|3|4>');
+        const step = parseInt(args.step, 10);
+        if (!VALID_STEPS.has(step)) {
+          process.stderr.write(JSON.stringify(envelopeError('blocking', `Invalid --step: ${args.step}. Must be one of 1, 2, 3, 4.`)) + '\n');
+          process.exit(1);
+        }
+        result = checkpoint(args['session-dir'], step);
         break;
       }
-      case 'checkpoint':
-        validateArgs(['session-dir', 'step'], 'checkpoint --session-dir PATH --step STEP_KEY');
-        result = checkpoint(args['session-dir'], args.step);
-        break;
       case 'log': {
         validateArgs(['session-dir', 'entry'], 'log --session-dir PATH --entry JSON');
         const entry = JSON.parse(args.entry);
@@ -115,8 +129,12 @@ if (require.main === module) {
         validateArgs(['session-dir'], 'status --session-dir PATH');
         result = status(args['session-dir']);
         break;
+      case 'schedule':
+        process.stderr.write(JSON.stringify(envelopeError('blocking', 'Subcommand `schedule` is removed in v5. Use `whiteboard.js register-*` instead.')) + '\n');
+        process.exit(1);
+        break; // unreachable
       default:
-        process.stderr.write(JSON.stringify(envelopeError('blocking', `Unknown mode: ${mode}. Use schedule, checkpoint, log, or status.`)) + '\n');
+        process.stderr.write(JSON.stringify(envelopeError('blocking', `Unknown subcommand: ${mode}. Use checkpoint, log, or status.`)) + '\n');
         process.exit(1);
     }
     process.stdout.write(JSON.stringify(envelope(result), null, 2) + '\n');
@@ -126,4 +144,4 @@ if (require.main === module) {
   }
 }
 
-module.exports = { schedule, checkpoint, log, status };
+module.exports = { checkpoint, log, status, scheduledConceptIds };

@@ -1,0 +1,27 @@
+{
+  "name": "genuinely_novel_speculative_decode",
+  "category": "genuinely_novel",
+  "candidate": {
+    "id": "speculative_decoding",
+    "description": "LLM inference acceleration where a small draft model proposes K tokens and a large target model verifies them in parallel, accepting the longest valid prefix.",
+    "proposed_parent": "natural_language_processing",
+    "proposed_domain": "machine_learning"
+  },
+  "candidates_full": [
+    {
+      "id": "natural_language_processing",
+      "kind": "l1",
+      "domain": "machine_learning",
+      "full_description": "ML applied to understanding and generating human language; covers classification, NER, summarization, translation, and generation. Speculative decoding is a recent inference-time optimization technique not previously catalogued."
+    },
+    {
+      "id": "retrieval_augmented_gen",
+      "kind": "l1",
+      "domain": "machine_learning",
+      "full_description": "Grounding LLM responses with retrieved documents for accuracy and currency."
+    }
+  ],
+  "expected_match": "no_match",
+  "expected_matched_id": null,
+  "expected_confidence_min": 0.7
+}

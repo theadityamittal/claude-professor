@@ -1,17 +1,15 @@
 # Concept Lookup
 
 ## Description
-Searches concepts by query terms and domains, returns matching concept IDs and status.
-
-## Concepts Involved
-- `architecture`
+Concept registry search, L2 discovery, and state lookup with retrievability computation
 
 ## Depends On
-- [[fsrs-scheduler]]
+- [[file-io-utilities]]
+- [[spaced-repetition]]
 
 ## Depended On By
-- [[session-state]]
-- [[teaching-gate]]
+- [[session-lifecycle]]
+- [[whiteboard-commands]]
 
 ## Key Files
 - scripts/lookup.js

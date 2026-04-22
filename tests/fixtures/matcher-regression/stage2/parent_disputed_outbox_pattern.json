@@ -1,0 +1,34 @@
+{
+  "name": "parent_disputed_outbox_pattern",
+  "category": "parent_disputed",
+  "candidate": {
+    "id": "transactional_outbox",
+    "description": "Pattern that publishes events atomically with database writes by inserting them into an outbox table within the same DB transaction; a relay process then ships them to a broker.",
+    "proposed_parent": "indexing",
+    "proposed_domain": "databases"
+  },
+  "candidates_full": [
+    {
+      "id": "indexing",
+      "kind": "l1",
+      "domain": "databases",
+      "full_description": "Data structures accelerating data retrieval; unrelated to event publishing semantics."
+    },
+    {
+      "id": "message_queues",
+      "kind": "l1",
+      "domain": "performance_scalability",
+      "full_description": "Asynchronous decoupling of producers and consumers via durable queues; outbox patterns commonly publish to these brokers."
+    },
+    {
+      "id": "distributed_transactions",
+      "kind": "l1",
+      "domain": "distributed_systems",
+      "full_description": "Transactions spanning multiple services or databases; transactional outbox is a canonical alternative to 2PC for cross-service consistency."
+    }
+  ],
+  "expected_match": "parent_disputed",
+  "expected_matched_id": null,
+  "expected_suggested_parent": "distributed_transactions",
+  "expected_confidence_min": 0.6
+}

@@ -1,0 +1,23 @@
+{
+  "name": "l1_reinvention_caching_strategies",
+  "category": "l1_reinvention",
+  "candidate": {
+    "id": "caching_patterns_for_apis",
+    "description": "Common patterns for caching API responses: cache-aside, write-through, write-back, refresh-ahead, and TTL-based invalidation.",
+    "proposed_parent": "load_balancing",
+    "proposed_domain": "performance_scalability"
+  },
+  "universe_thin": {
+    "l2s": [
+      { "id": "http_response_caching", "parent": "load_balancing", "scope_1line": "Caching full HTTP responses at edge or reverse proxy layers." },
+      { "id": "sticky_sessions", "parent": "load_balancing", "scope_1line": "Pinning a client to one backend for session affinity." }
+    ],
+    "l1s": [
+      { "id": "caching_strategies", "domain": "performance_scalability", "scope_1line": "Patterns for storing frequently accessed data closer to consumers." },
+      { "id": "load_balancing", "domain": "performance_scalability", "scope_1line": "Distributing work across servers using algorithms and health checks." },
+      { "id": "cache_invalidation", "domain": "performance_scalability", "scope_1line": "Strategies for keeping cached data consistent with source of truth." }
+    ]
+  },
+  "expected_top_candidate_ids": ["caching_strategies"],
+  "min_confidence": 0.7
+}

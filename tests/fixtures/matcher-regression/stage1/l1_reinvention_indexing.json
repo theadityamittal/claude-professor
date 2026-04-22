@@ -1,0 +1,22 @@
+{
+  "name": "l1_reinvention_indexing",
+  "category": "l1_reinvention",
+  "candidate": {
+    "id": "db_indexes_overview",
+    "description": "Data structures accelerating lookups in databases: B-trees, hash, GIN, GiST, with tradeoffs in write amplification and space.",
+    "proposed_parent": "query_optimization",
+    "proposed_domain": "databases"
+  },
+  "universe_thin": {
+    "l2s": [
+      { "id": "index_selection", "parent": "query_optimization", "scope_1line": "Planner decision of which index (if any) to use for a query." },
+      { "id": "covering_indexes", "parent": "indexing", "scope_1line": "Indexes that include all columns needed by a query, avoiding heap lookups." }
+    ],
+    "l1s": [
+      { "id": "indexing", "domain": "databases", "scope_1line": "Data structures accelerating data retrieval (B-tree, hash, GIN, GiST)." },
+      { "id": "query_optimization", "domain": "databases", "scope_1line": "Planner and cost-based rewriting of queries for efficient execution." }
+    ]
+  },
+  "expected_top_candidate_ids": ["indexing"],
+  "min_confidence": 0.7
+}

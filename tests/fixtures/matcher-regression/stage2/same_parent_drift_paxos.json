@@ -1,0 +1,29 @@
+{
+  "name": "same_parent_drift_paxos",
+  "category": "same_parent_drift",
+  "candidate": {
+    "id": "paxos_protocol",
+    "description": "Classic asynchronous consensus protocol with proposers, acceptors, and learners; tolerates F failures with 2F+1 acceptors.",
+    "proposed_parent": "consensus",
+    "proposed_domain": "distributed_systems"
+  },
+  "candidates_full": [
+    {
+      "id": "paxos",
+      "kind": "l2",
+      "parent": "consensus",
+      "domain": "distributed_systems",
+      "full_description": "Lamport's consensus protocol: prepare/promise then accept/accepted phases over a quorum of acceptors; foundation of multi-Paxos and variants like Raft."
+    },
+    {
+      "id": "raft_consensus",
+      "kind": "l2",
+      "parent": "consensus",
+      "domain": "distributed_systems",
+      "full_description": "Understandable consensus algorithm with explicit leader election and log replication; equivalent in power to Paxos."
+    }
+  ],
+  "expected_match": "semantic_l2",
+  "expected_matched_id": "paxos",
+  "expected_confidence_min": 0.8
+}

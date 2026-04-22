@@ -1,0 +1,34 @@
+{
+  "name": "parent_disputed_hnsw_index",
+  "category": "parent_disputed",
+  "candidate": {
+    "id": "hnsw_graph_index",
+    "description": "Hierarchical Navigable Small World graph index for approximate nearest-neighbor search over high-dimensional embeddings.",
+    "proposed_parent": "graphs",
+    "proposed_domain": "algorithms_data_structures"
+  },
+  "candidates_full": [
+    {
+      "id": "graphs",
+      "kind": "l1",
+      "domain": "algorithms_data_structures",
+      "full_description": "General graph data structure: vertices, edges, traversals; foundation for many algorithms but not specifically about ANN search."
+    },
+    {
+      "id": "indexing",
+      "kind": "l1",
+      "domain": "databases",
+      "full_description": "Data structures accelerating data retrieval (B-tree, hash, GIN, GiST, ANN indexes such as HNSW)."
+    },
+    {
+      "id": "dimensionality_reduction",
+      "kind": "l1",
+      "domain": "machine_learning",
+      "full_description": "Reducing feature count via projection or quantization; related to ANN search through compressed representations."
+    }
+  ],
+  "expected_match": "parent_disputed",
+  "expected_matched_id": null,
+  "expected_suggested_parent": "indexing",
+  "expected_confidence_min": 0.6
+}

@@ -1,0 +1,22 @@
+{
+  "name": "parent_disputed_vector_quantization",
+  "category": "parent_disputed",
+  "candidate": {
+    "id": "vector_quantization",
+    "description": "Compressing high-dimensional embeddings into discrete codebook indices (product quantization, scalar quantization) to reduce memory for similarity search.",
+    "proposed_parent": "clustering",
+    "proposed_domain": "machine_learning"
+  },
+  "universe_thin": {
+    "l2s": [
+      { "id": "product_quantization", "parent": "dimensionality_reduction", "scope_1line": "Split vector into subspaces, quantize each with its own codebook." },
+      { "id": "ann_indexes", "parent": "dimensionality_reduction", "scope_1line": "Approximate nearest-neighbor indexes: HNSW, IVF, LSH." }
+    ],
+    "l1s": [
+      { "id": "dimensionality_reduction", "domain": "machine_learning", "scope_1line": "Reducing feature count via projection or quantization." },
+      { "id": "clustering", "domain": "machine_learning", "scope_1line": "Unsupervised grouping of points by similarity." }
+    ]
+  },
+  "expected_top_candidate_ids": ["product_quantization", "dimensionality_reduction"],
+  "min_confidence": 0.5
+}

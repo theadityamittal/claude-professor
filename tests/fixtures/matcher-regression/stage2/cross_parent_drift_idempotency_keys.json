@@ -1,0 +1,29 @@
+{
+  "name": "cross_parent_drift_idempotency_keys",
+  "category": "cross_parent_drift",
+  "candidate": {
+    "id": "idempotency_keys_payments",
+    "description": "Client-supplied unique keys deduplicating retried mutating requests so repeated submissions produce identical observable outcomes.",
+    "proposed_parent": "async_processing",
+    "proposed_domain": "performance_scalability"
+  },
+  "candidates_full": [
+    {
+      "id": "idempotency_key_pattern",
+      "kind": "l2",
+      "parent": "idempotency",
+      "domain": "distributed_systems",
+      "full_description": "Client supplies an opaque unique key with each mutating request; server stores result keyed by it and returns the cached response on retry."
+    },
+    {
+      "id": "exactly_once_messaging",
+      "kind": "l2",
+      "parent": "message_queues",
+      "domain": "performance_scalability",
+      "full_description": "Achieving exactly-once delivery semantics via deduplication + transactional outbox patterns."
+    }
+  ],
+  "expected_match": "semantic_l2",
+  "expected_matched_id": "idempotency_key_pattern",
+  "expected_confidence_min": 0.7
+}

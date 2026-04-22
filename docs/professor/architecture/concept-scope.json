@@ -2,7 +2,9 @@
   "relevant_domains": [
     "algorithms_data_structures",
     "architecture",
+    "machine_learning",
     "operating_systems",
+    "performance_scalability",
     "security",
     "software_construction",
     "testing"
@@ -20,21 +22,23 @@
   "detected_patterns": [
     "graphs",
     "graph_traversal",
-    "layered_architecture",
-    "event_driven_architecture",
     "design_patterns",
     "domain_driven_design",
+    "dependency_injection",
     "session_management",
     "file_systems",
+    "io_management",
     "cpu_scheduling",
     "process_scheduling_policies",
+    "schema_migration",
+    "schema_evolution",
     "version_control",
+    "reinforcement_learning",
     "unit_testing",
     "integration_testing",
     "contract_testing",
-    "test_driven_development",
-    "reinforcement_learning"
+    "test_driven_development"
   ],
   "generated_from": "analyze-architecture",
-  "last_updated": "2026-04-21T00:00:00.000Z"
+  "last_updated": "2026-04-21T09:31:15.408Z"
 }

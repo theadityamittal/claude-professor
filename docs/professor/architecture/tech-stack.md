@@ -10,7 +10,7 @@
 
 - **Skill Framework**: Claude Code plugin system (skill manifest + SKILL.md registration)
 - **CLI Dispatch**: Custom subcommand router in `scripts/whiteboard.js` (16 subcommands)
-- **Plugin Version**: Claude Code v4.0.0+ plugin architecture
+- **Plugin Version**: claude-professor v5.1.1 (plugin.json)
 
 ## Data Stores
 

@@ -1,18 +1,18 @@
 # File Io Utilities
 
 ## Description
-JSON and markdown file operations, CLI argument parsing, environment expansion, and response envelopes
+Shared file I/O, markdown parsing, argument parsing, and API envelope utilities for all scripts
+
+## Concepts Involved
+- `file_systems`
+- `input_validation`
 
 ## Depended On By
-- [[spaced-repetition]]
-- [[concept-lookup]]
 - [[session-lifecycle]]
-- [[session-checkpoint]]
-- [[whiteboard-router]]
-- [[concept-update]]
-- [[architecture-graph]]
-- [[concept-migration]]
-- [[configuration-validation]]
+- [[concept-registry-lookup]]
+- [[concept-progress-tracking]]
+- [[phase-checkpointing]]
+- [[architecture-generation]]
 
 ## Key Files
 - scripts/utils.js

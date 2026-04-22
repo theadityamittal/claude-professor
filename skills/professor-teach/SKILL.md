@@ -145,6 +145,37 @@ Give brief feedback after grading:
 
 For `known_baseline` (status was `new`, baseline grade ≥ 3): give a one-sentence acknowledgment. No full teach.
 
+## Step 6 — Update FSRS state with grade + nonce
+
+Skip this step when action is `skipped_not_due` or `known_baseline` with grade `null`.
+
+For L1:
+
+```bash
+node ${CLAUDE_PLUGIN_ROOT}/scripts/update.js \
+  --concept <concept_id> \
+  --grade <1-4> \
+  --nonce "<session_id>-<concept_id>" \
+  --profile-dir ~/.claude/professor/concepts/ \
+  --registry-path ${CLAUDE_PLUGIN_ROOT}/data/concepts_registry.json
+```
+
+For L2 (include `--parent-concept`):
+
+```bash
+node ${CLAUDE_PLUGIN_ROOT}/scripts/update.js \
+  --concept <concept_id> \
+  --parent-concept <parent_l1_id> \
+  --grade <1-4> \
+  --nonce "<session_id>-<concept_id>" \
+  --profile-dir ~/.claude/professor/concepts/ \
+  --registry-path ${CLAUDE_PLUGIN_ROOT}/data/concepts_registry.json
+```
+
+Registry-driven metadata: do NOT pass `--domain`, `--level`, or `--difficulty-tier` — update.js resolves them from the registry. Envelope `data.action` of `created`, `updated`, or `idempotent_skip` is all success.
+
+If the envelope fails, include the failure in `notes_for_session_log` but still return the action and grade — the session log must remain consistent with what happened in-conversation.
+
 ## Step 7 — Write/overwrite Teaching Guide section
 
 Always OVERWRITE the `## Teaching Guide` section with current guidance (not a journal). Construct the body below, then call `update.js --body`:
@@ -186,37 +217,6 @@ node ${CLAUDE_PLUGIN_ROOT}/scripts/update.js \
 If the envelope returns `status: "error"`, note the failure in `notes_for_session_log` but continue to Step 8. FSRS state is already persisted. This is the `update_script_failure` degradation mode.
 
 Skip Step 7 entirely when action is `skipped_not_due`.
-
-## Step 6 — Update FSRS state with grade + nonce
-
-Skip this step when action is `skipped_not_due` or `known_baseline` with grade `null`.
-
-For L1:
-
-```bash
-node ${CLAUDE_PLUGIN_ROOT}/scripts/update.js \
-  --concept <concept_id> \
-  --grade <1-4> \
-  --nonce "<session_id>-<concept_id>" \
-  --profile-dir ~/.claude/professor/concepts/ \
-  --registry-path ${CLAUDE_PLUGIN_ROOT}/data/concepts_registry.json
-```
-
-For L2 (include `--parent-concept`):
-
-```bash
-node ${CLAUDE_PLUGIN_ROOT}/scripts/update.js \
-  --concept <concept_id> \
-  --parent-concept <parent_l1_id> \
-  --grade <1-4> \
-  --nonce "<session_id>-<concept_id>" \
-  --profile-dir ~/.claude/professor/concepts/ \
-  --registry-path ${CLAUDE_PLUGIN_ROOT}/data/concepts_registry.json
-```
-
-Registry-driven metadata: do NOT pass `--domain`, `--level`, or `--difficulty-tier` — update.js resolves them from the registry. Envelope `data.action` of `created`, `updated`, or `idempotent_skip` is all success.
-
-If the envelope fails, include the failure in `notes_for_session_log` but still return the action and grade — the session log must remain consistent with what happened in-conversation.
 
 ## Step 8 — Return envelope
 
